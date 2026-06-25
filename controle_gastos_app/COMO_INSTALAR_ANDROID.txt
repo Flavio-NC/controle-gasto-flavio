@@ -1,9 +1,0 @@
-COMO USAR NO ANDROID
-
-1. Para usar rápido: abra o arquivo Controle_Gastos_App_Flavio.html no Chrome.
-2. Para instalar como app de verdade, hospede a pasta controle_gastos_app em um endereço HTTPS, como GitHub Pages ou Netlify.
-3. Depois abra o link HTTPS no Chrome, toque nos três pontinhos e escolha "Instalar app" ou "Adicionar à tela inicial".
-
-IMPORTANTE
-- Se abrir direto da pasta Downloads, o Android pode não mostrar a opção de instalar.
-- Os dados ficam salvos no aparelho/navegador. Use Exportar backup antes de trocar de versão ou limpar dados do Chrome.
