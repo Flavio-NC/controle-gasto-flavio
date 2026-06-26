@@ -147,7 +147,16 @@
     .itemTop { display:flex; align-items:flex-start; justify-content:space-between; gap: 10px; }
     .itemTitle { font-weight: 800; margin-bottom: 4px; }
     .itemMeta { color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .itemMeta.compact { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .amount { font-weight: 900; white-space: nowrap; }
+    .listTools { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin: 10px 0 12px; }
+    .listTools .hint { margin: 0; flex: 1 1 220px; }
+    .toggleBtn { width:auto; min-width: 155px; padding: 11px 14px; }
+    .expenseDetails { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+    .expenseDetails > summary { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .expenseDetails > summary::after { content: 'abrir'; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .expenseDetails[open] > summary::after { content: 'fechar'; }
+    .expenseDetailsBody { margin-top: 10px; }
     .amount.expense { color: #fecaca; }
     .amount.income { color: #bbf7d0; }
     .amount.warn { color: #fde68a; }
@@ -351,6 +360,10 @@
 
       <div class="panel">
         <h2>Gastos do mês selecionado</h2>
+        <div class="listTools">
+          <div class="hint">Use o botão ao lado para deixar os cartões dos gastos mais limpos.</div>
+          <button id="toggleExpenseDetailsBtn" class="toggleBtn secondary" type="button">Mostrar detalhes</button>
+        </div>
         <div id="expensesList" class="list"></div>
       </div>
     </section>
@@ -588,6 +601,9 @@
     let state = loadState();
     let selectedMonth = currentMonth();
     let deferredPrompt = null;
+    let expenseDetailsOpen = localStorage.getItem(STORE_KEY + '-expense-details-open') === '1';
+    const openExpenseDetails = new Set();
+    const openInstallmentGroups = new Set();
 
     function loadState() {
       let raw = localStorage.getItem(STORE_KEY);
@@ -1052,6 +1068,8 @@
 
     function renderExpenses() {
       const box = document.getElementById('expensesList');
+      const toggleBtn = document.getElementById('toggleExpenseDetailsBtn');
+      if (toggleBtn) toggleBtn.textContent = expenseDetailsOpen ? 'Minimizar detalhes' : 'Mostrar detalhes';
       const items = [...state.expenses].filter(e => monthKey(e.date) === selectedMonth).sort((a,b) => (b.date || '').localeCompare(a.date || ''));
       if (!items.length) { box.innerHTML = '<div class="empty">Nenhum gasto cadastrado neste mês.</div>'; return; }
       box.innerHTML = items.map(e => {
@@ -1063,39 +1081,46 @@
         const isInstallment = Number(e.installmentTotal || 1) > 1;
         const installmentText = isInstallment ? `Parcela ${e.installmentNumber}/${e.installmentTotal}` : 'Compra à vista';
         const originalText = isInstallment && e.purchaseDate ? ` • compra feita em ${formatDate(e.purchaseDate)}` : '';
+        const detailsOpen = expenseDetailsOpen || openExpenseDetails.has(e.id);
         return `
         <div class="item">
           <div class="itemTop">
             <div>
               <div class="itemTitle">${escapeHtml(e.name)}</div>
-              <div class="itemMeta">${installmentText} • mês ${formatDate(e.date)} • ${escapeHtml(e.category)} • ${escapeHtml(e.method)}${e.dueDate ? ' • vence ' + formatDate(e.dueDate) : ''}${originalText}${e.note ? ' • ' + escapeHtml(e.note) : ''}</div>
+              <div class="itemMeta compact">${installmentText} • ${escapeHtml(e.category)} • ${escapeHtml(e.method)}${e.dueDate ? ' • vence ' + formatDate(e.dueDate) : ''}</div>
               <span class="badge ${status}">${statusText}</span>
             </div>
             <div class="amount expense">${money(e.amount)}</div>
           </div>
-          <div class="miniGrid">
-            <div class="mini"><span class="small">Pago</span><strong class="amount income">${money(paid)}</strong></div>
-            <div class="mini"><span class="small">Falta</span><strong class="amount warn">${money(remaining)}</strong></div>
-            <div class="mini"><span class="small">Total</span><strong>${money(e.amount)}</strong></div>
-          </div>
-          <details>
-            <summary>Adicionar pagamento parcial</summary>
-            <div class="row3">
-              <div><label>Data</label><input id="payDate-${e.id}" type="date" value="${today()}" /></div>
-              <div><label>Valor pago</label><input id="payAmount-${e.id}" inputmode="decimal" placeholder="Ex: 100" /></div>
-              <div><label>Forma</label><select id="payMethod-${e.id}">${state.methods.map(m => `<option>${escapeHtml(m)}</option>`).join('')}</select></div>
+          <details class="expenseDetails" ${detailsOpen ? 'open' : ''} ontoggle="rememberExpenseDetails('${e.id}', this.open)">
+            <summary>Informações do gasto</summary>
+            <div class="expenseDetailsBody">
+              <div class="itemMeta">${installmentText} • mês ${formatDate(e.date)} • ${escapeHtml(e.category)} • ${escapeHtml(e.method)}${e.dueDate ? ' • vence ' + formatDate(e.dueDate) : ''}${originalText}${e.note ? ' • ' + escapeHtml(e.note) : ''}</div>
+              <div class="miniGrid">
+                <div class="mini"><span class="small">Pago</span><strong class="amount income">${money(paid)}</strong></div>
+                <div class="mini"><span class="small">Falta</span><strong class="amount warn">${money(remaining)}</strong></div>
+                <div class="mini"><span class="small">Total</span><strong>${money(e.amount)}</strong></div>
+              </div>
+              <details>
+                <summary>Adicionar pagamento parcial</summary>
+                <div class="row3">
+                  <div><label>Data</label><input id="payDate-${e.id}" type="date" value="${today()}" /></div>
+                  <div><label>Valor pago</label><input id="payAmount-${e.id}" inputmode="decimal" placeholder="Ex: 100" /></div>
+                  <div><label>Forma</label><select id="payMethod-${e.id}">${state.methods.map(m => `<option>${escapeHtml(m)}</option>`).join('')}</select></div>
+                </div>
+                <label>Observação do pagamento</label>
+                <input id="payNote-${e.id}" placeholder="Opcional. Ex: paguei parte da fatura" />
+                <div class="actions"><button class="good" onclick="addPayment('${e.id}')">Salvar pagamento</button></div>
+              </details>
+              ${payments.length ? `<div class="paymentList">${payments.map(p => `<div class="paymentItem"><span>${formatDate(p.date)} • ${escapeHtml(p.method)}${p.note ? ' • ' + escapeHtml(p.note) : ''}</span><strong>${money(p.amount)}</strong></div>`).join('')}</div>` : ''}
+              ${isInstallment ? renderInstallmentControls(e) : ''}
+              <div class="actions">
+                ${remaining > 0 ? `<button class="good" onclick="payRemaining('${e.id}')">Quitar restante</button>` : ''}
+                <button class="danger" onclick="deleteExpense('${e.id}')">${e.groupId ? 'Excluir parcela' : 'Excluir gasto'}</button>
+                ${e.groupId ? `<button class="danger" onclick="deleteInstallmentGroup('${e.groupId}')">Excluir compra inteira</button>` : ''}
+              </div>
             </div>
-            <label>Observação do pagamento</label>
-            <input id="payNote-${e.id}" placeholder="Opcional. Ex: paguei parte da fatura" />
-            <div class="actions"><button class="good" onclick="addPayment('${e.id}')">Salvar pagamento</button></div>
           </details>
-          ${payments.length ? `<div class="paymentList">${payments.map(p => `<div class="paymentItem"><span>${formatDate(p.date)} • ${escapeHtml(p.method)}${p.note ? ' • ' + escapeHtml(p.note) : ''}</span><strong>${money(p.amount)}</strong></div>`).join('')}</div>` : ''}
-          ${isInstallment ? renderInstallmentControls(e) : ''}
-          <div class="actions">
-            ${remaining > 0 ? `<button class="good" onclick="payRemaining('${e.id}')">Quitar restante</button>` : ''}
-            <button class="danger" onclick="deleteExpense('${e.id}')">${e.groupId ? 'Excluir parcela' : 'Excluir gasto'}</button>
-            ${e.groupId ? `<button class="danger" onclick="deleteInstallmentGroup('${e.groupId}')">Excluir compra inteira</button>` : ''}
-          </div>
         </div>`;
       }).join('');
     }
@@ -1106,9 +1131,10 @@
         .filter(x => x.groupId === expense.groupId)
         .sort((a,b) => Number(a.installmentNumber || 1) - Number(b.installmentNumber || 1));
       if (!group.length) return '';
-      return `<details>
+      const isOpen = openInstallmentGroups.has(expense.groupId);
+      return `<details ${isOpen ? 'open' : ''} ontoggle="rememberInstallmentOpen('${expense.groupId}', this.open)">
         <summary>Marcar quais parcelas foram pagas</summary>
-        <div class="hint" style="margin-top:10px;">Marque a caixinha da parcela que você já pagou. Se desmarcar, o app limpa os pagamentos daquela parcela.</div>
+        <div class="hint" style="margin-top:10px;">Marque a caixinha da parcela que você já pagou. Esta lista agora fica aberta enquanto você marca as parcelas.</div>
         <div class="installmentList">
           ${group.map(p => {
             const paid = totalPaidForExpense(p);
@@ -1124,6 +1150,27 @@
           }).join('')}
         </div>
       </details>`;
+    }
+
+    function rememberExpenseDetails(expenseId, isOpen) {
+      if (!expenseId) return;
+      if (isOpen) openExpenseDetails.add(expenseId);
+      else openExpenseDetails.delete(expenseId);
+    }
+
+    function rememberInstallmentOpen(groupId, isOpen) {
+      if (!groupId) return;
+      if (isOpen) openInstallmentGroups.add(groupId);
+      else openInstallmentGroups.delete(groupId);
+    }
+
+    function toggleExpenseDetailsMode() {
+      expenseDetailsOpen = !expenseDetailsOpen;
+      localStorage.setItem(STORE_KEY + '-expense-details-open', expenseDetailsOpen ? '1' : '0');
+      if (!expenseDetailsOpen) {
+        openExpenseDetails.clear();
+      }
+      renderExpenses();
     }
 
     function toggleInstallmentPaid(expenseId, checked) {
@@ -1476,6 +1523,7 @@
     }
 
     document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
+    document.getElementById('toggleExpenseDetailsBtn').addEventListener('click', toggleExpenseDetailsMode);
     document.getElementById('addIncomeBtn').addEventListener('click', addIncome);
     document.getElementById('saveCashBtn').addEventListener('click', saveCash);
     document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
