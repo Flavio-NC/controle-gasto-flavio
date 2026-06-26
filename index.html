@@ -214,6 +214,13 @@
     .sheetHeader .actions { margin-top:0; }
     .sheetTotals { margin-top: 12px; }
     .sheetTotals .card { min-height: 82px; }
+
+    .sectionHeader { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 12px; }
+    .sectionHeader h2 { margin: 0; }
+    .collapseBtn { width:auto; min-width: 120px; padding: 10px 12px; min-height: 40px; font-size: 13px; }
+    .reserveProgress { height: 10px; border-radius: 999px; background:#0b1220; overflow:hidden; margin-top: 10px; border: 1px solid var(--line); }
+    .reserveProgress > span { display:block; height:100%; background: linear-gradient(90deg, var(--good), var(--accent)); border-radius:inherit; }
+    .editNote { color: var(--muted); font-size: 12px; line-height: 1.35; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -247,13 +254,23 @@
           <div class="small">Caixa inicial + todos os ganhos - todos os pagamentos feitos.</div>
         </div>
         <div class="card">
+          <div class="label">Reserva de emergência</div>
+          <div id="emergencyReserveValue" class="value good">R$ 0,00</div>
+          <div class="small">Valor separado para não usar no dia a dia.</div>
+        </div>
+        <div class="card">
+          <div class="label">Caixa livre</div>
+          <div id="freeCashValue" class="value">R$ 0,00</div>
+          <div class="small">Caixa atual - reserva de emergência.</div>
+        </div>
+        <div class="card">
           <div class="label">Ganhos do mês</div>
           <div id="monthIncome" class="value good">R$ 0,00</div>
         </div>
         <div class="card">
-          <div class="label">Compras do mês</div>
+          <div class="label">Cobranças do mês</div>
           <div id="monthPurchases" class="value bad">R$ 0,00</div>
-          <div class="small">Tudo que você comprou no mês selecionado.</div>
+          <div class="small">Tudo que vence/cai no mês selecionado.</div>
         </div>
         <div class="card">
           <div class="label">Pago neste mês</div>
@@ -261,7 +278,7 @@
           <div class="small">Pagamentos feitos no mês, inclusive parciais.</div>
         </div>
         <div class="card">
-          <div class="label">Falta pagar das compras do mês</div>
+          <div class="label">Falta pagar das cobranças do mês</div>
           <div id="monthRemaining" class="value warn">R$ 0,00</div>
         </div>
         <div class="card">
@@ -294,16 +311,41 @@
       </div>
 
       <div class="panel">
-        <h2>Resumo por categoria</h2>
-        <div id="categorySummary" class="list"></div>
+        <div class="sectionHeader">
+          <h2>Resumo por categoria</h2>
+          <button id="toggleCategorySummaryBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="categorySummaryWrap">
+          <div id="categorySummary" class="list"></div>
+        </div>
       </div>
 
       <div class="panel">
         <h2>Ajuste do caixa</h2>
-        <div class="hint">Coloque aqui quanto dinheiro você tem agora ou quanto quer considerar como caixa inicial. Depois o app calcula automaticamente pelos ganhos e pagamentos.</div>
         <label for="initialCash">Caixa inicial</label>
         <input id="initialCash" inputmode="decimal" placeholder="Ex: 1500" />
         <div class="actions"><button id="saveCashBtn">Salvar caixa</button></div>
+      </div>
+
+      <div class="panel">
+        <h2>Reserva de emergência</h2>
+        <div class="row">
+          <div>
+            <label for="emergencyReserve">Valor guardado</label>
+            <input id="emergencyReserve" inputmode="decimal" placeholder="Ex: 500" />
+          </div>
+          <div>
+            <label for="emergencyTarget">Meta da reserva</label>
+            <input id="emergencyTarget" inputmode="decimal" placeholder="Ex: 5000" />
+          </div>
+        </div>
+        <div class="miniGrid">
+          <div class="mini"><span class="small">Guardado</span><strong id="reserveSavedMini" class="amount income">R$ 0,00</strong></div>
+          <div class="mini"><span class="small">Falta para meta</span><strong id="reserveMissingMini" class="amount warn">R$ 0,00</strong></div>
+          <div class="mini"><span class="small">Progresso</span><strong id="reserveProgressMini">0%</strong></div>
+        </div>
+        <div class="reserveProgress"><span id="reserveProgressBar" style="width:0%"></span></div>
+        <div class="actions"><button id="saveReserveBtn">Salvar reserva</button></div>
       </div>
     </section>
 
@@ -352,19 +394,24 @@
             <input id="installmentPreview" readonly value="À vista / 1x" />
           </div>
         </div>
-        <div class="hint">Se for parcelado, coloque o total da compra e o número de parcelas. O app cria uma parcela em cada mês automaticamente.</div>
+        <div class="hint">Se for cartão/crédito, coloque o vencimento ou a 1ª parcela. A cobrança entra no mês do vencimento, não no mês da compra.</div>
         <label for="expenseNote">Observação</label>
         <textarea id="expenseNote" placeholder="Opcional. Ex: compra no Nubank crédito, fatura, parcela..."></textarea>
         <div class="actions"><button id="addExpenseBtn">Adicionar gasto</button></div>
       </div>
 
       <div class="panel">
-        <h2>Gastos do mês selecionado</h2>
-        <div class="listTools">
-          <div class="hint">Use o botão ao lado para deixar os cartões dos gastos mais limpos.</div>
-          <button id="toggleExpenseDetailsBtn" class="toggleBtn secondary" type="button">Mostrar detalhes</button>
+        <div class="sectionHeader">
+          <h2>Gastos do mês selecionado</h2>
+          <button id="toggleExpensesListBtn" class="secondary collapseBtn" type="button">Minimizar lista</button>
         </div>
-        <div id="expensesList" class="list"></div>
+        <div id="expensesListWrap">
+          <div class="listTools">
+            <div class="hint">Use o botão ao lado para deixar os cartões dos gastos mais limpos.</div>
+            <button id="toggleExpenseDetailsBtn" class="toggleBtn secondary" type="button">Mostrar detalhes</button>
+          </div>
+          <div id="expensesList" class="list"></div>
+        </div>
       </div>
     </section>
 
@@ -602,6 +649,8 @@
     let selectedMonth = currentMonth();
     let deferredPrompt = null;
     let expenseDetailsOpen = localStorage.getItem(STORE_KEY + '-expense-details-open') === '1';
+    let expenseListOpen = localStorage.getItem(STORE_KEY + '-expense-list-open') !== '0';
+    let categorySummaryOpen = localStorage.getItem(STORE_KEY + '-category-summary-open') !== '0';
     const openExpenseDetails = new Set();
     const openInstallmentGroups = new Set();
 
@@ -620,7 +669,7 @@
     }
 
     function blankState() {
-      return { version: 4, initialCash: 0, expenses: [], incomes: [], categories: defaultCategories, methods: defaultMethods };
+      return { version: 4, initialCash: 0, emergencyReserve: 0, emergencyTarget: 0, expenses: [], incomes: [], categories: defaultCategories, methods: defaultMethods };
     }
 
     function migrateState(data) {
@@ -651,6 +700,8 @@
       return {
         version: 4,
         initialCash: Number(data.initialCash || 0),
+        emergencyReserve: Number(data.emergencyReserve || 0),
+        emergencyTarget: Number(data.emergencyTarget || 0),
         expenses,
         incomes: Array.isArray(data.incomes) ? data.incomes.map(i => ({ id: i.id || uid(), date: i.date || today(), name: i.name || 'Ganho', amount: Number(i.amount || 0), category: i.category || 'Outros' })) : [],
         categories: Array.isArray(data.categories) && data.categories.length ? unique([...data.categories, ...defaultCategories]) : base.categories,
@@ -729,6 +780,8 @@
       document.getElementById('sheetMonthFilter').value = selectedMonth;
       document.getElementById('chartMonthFilter').value = selectedMonth;
       document.getElementById('initialCash').value = state.initialCash ? String(state.initialCash).replace('.', ',') : '';
+      document.getElementById('emergencyReserve').value = state.emergencyReserve ? String(state.emergencyReserve).replace('.', ',') : '';
+      document.getElementById('emergencyTarget').value = state.emergencyTarget ? String(state.emergencyTarget).replace('.', ',') : '';
     }
 
     function totalPaidForExpense(expense) {
@@ -759,13 +812,19 @@
       const monthRemaining = expensesMonth.reduce((s,x) => s + remainingForExpense(x), 0);
       const allRemaining = state.expenses.reduce((s,x) => s + remainingForExpense(x), 0);
       const cashNow = Number(state.initialCash || 0) + totalIncomes - totalPayments;
-      return { incomesMonth, purchasesMonth, paymentsMonth, monthRemaining, allRemaining, cashNow, monthBalance: incomesMonth - paymentsMonth, afterAllPending: cashNow - allRemaining };
+      const emergencyReserve = Number(state.emergencyReserve || 0);
+      const emergencyTarget = Number(state.emergencyTarget || 0);
+      const freeCash = cashNow - emergencyReserve;
+      return { incomesMonth, purchasesMonth, paymentsMonth, monthRemaining, allRemaining, cashNow, emergencyReserve, emergencyTarget, freeCash, monthBalance: incomesMonth - paymentsMonth, afterAllPending: cashNow - allRemaining };
     }
 
     function renderDashboard() {
       const t = totals();
       document.getElementById('cashNow').textContent = money(t.cashNow);
       document.getElementById('cashNow').className = 'value ' + (t.cashNow >= 0 ? 'good' : 'bad');
+      document.getElementById('emergencyReserveValue').textContent = money(t.emergencyReserve);
+      document.getElementById('freeCashValue').textContent = money(t.freeCash);
+      document.getElementById('freeCashValue').className = 'value ' + (t.freeCash >= 0 ? 'good' : 'bad');
       document.getElementById('monthIncome').textContent = money(t.incomesMonth);
       document.getElementById('monthPurchases').textContent = money(t.purchasesMonth);
       document.getElementById('monthPayments').textContent = money(t.paymentsMonth);
@@ -775,6 +834,19 @@
       document.getElementById('monthBalance').className = 'value ' + (t.monthBalance >= 0 ? 'good' : 'bad');
       document.getElementById('afterAllPending').textContent = money(t.afterAllPending);
       document.getElementById('afterAllPending').className = 'value ' + (t.afterAllPending >= 0 ? 'good' : 'bad');
+
+      const reserveMissing = Math.max(0, t.emergencyTarget - t.emergencyReserve);
+      const reservePct = t.emergencyTarget > 0 ? Math.min(100, Math.round((t.emergencyReserve / t.emergencyTarget) * 100)) : 0;
+      document.getElementById('reserveSavedMini').textContent = money(t.emergencyReserve);
+      document.getElementById('reserveMissingMini').textContent = money(reserveMissing);
+      document.getElementById('reserveProgressMini').textContent = reservePct + '%';
+      document.getElementById('reserveProgressBar').style.width = reservePct + '%';
+      const categoryWrap = document.getElementById('categorySummaryWrap');
+      const categoryBtn = document.getElementById('toggleCategorySummaryBtn');
+      if (categoryWrap && categoryBtn) {
+        categoryWrap.classList.toggle('hidden', !categorySummaryOpen);
+        categoryBtn.textContent = categorySummaryOpen ? 'Minimizar' : 'Mostrar';
+      }
 
       renderPieChart();
       renderCategorySummary();
@@ -1068,6 +1140,12 @@
 
     function renderExpenses() {
       const box = document.getElementById('expensesList');
+      const listWrap = document.getElementById('expensesListWrap');
+      const listBtn = document.getElementById('toggleExpensesListBtn');
+      if (listWrap && listBtn) {
+        listWrap.classList.toggle('hidden', !expenseListOpen);
+        listBtn.textContent = expenseListOpen ? 'Minimizar lista' : 'Mostrar lista';
+      }
       const toggleBtn = document.getElementById('toggleExpenseDetailsBtn');
       if (toggleBtn) toggleBtn.textContent = expenseDetailsOpen ? 'Minimizar detalhes' : 'Mostrar detalhes';
       const items = [...state.expenses].filter(e => monthKey(e.date) === selectedMonth).sort((a,b) => (b.date || '').localeCompare(a.date || ''));
@@ -1095,7 +1173,7 @@
           <details class="expenseDetails" ${detailsOpen ? 'open' : ''} ontoggle="rememberExpenseDetails('${e.id}', this.open)">
             <summary>Informações do gasto</summary>
             <div class="expenseDetailsBody">
-              <div class="itemMeta">${installmentText} • mês ${formatDate(e.date)} • ${escapeHtml(e.category)} • ${escapeHtml(e.method)}${e.dueDate ? ' • vence ' + formatDate(e.dueDate) : ''}${originalText}${e.note ? ' • ' + escapeHtml(e.note) : ''}</div>
+              <div class="itemMeta">${installmentText} • cobrança ${formatDate(e.date)} • ${escapeHtml(e.category)} • ${escapeHtml(e.method)}${e.dueDate ? ' • vence ' + formatDate(e.dueDate) : ''}${originalText}${e.note ? ' • ' + escapeHtml(e.note) : ''}</div>
               <div class="miniGrid">
                 <div class="mini"><span class="small">Pago</span><strong class="amount income">${money(paid)}</strong></div>
                 <div class="mini"><span class="small">Falta</span><strong class="amount warn">${money(remaining)}</strong></div>
@@ -1115,6 +1193,7 @@
               ${payments.length ? `<div class="paymentList">${payments.map(p => `<div class="paymentItem"><span>${formatDate(p.date)} • ${escapeHtml(p.method)}${p.note ? ' • ' + escapeHtml(p.note) : ''}</span><strong>${money(p.amount)}</strong></div>`).join('')}</div>` : ''}
               ${isInstallment ? renderInstallmentControls(e) : ''}
               <div class="actions">
+                <button class="secondary" onclick="editExpense('${e.id}')">Editar</button>
                 ${remaining > 0 ? `<button class="good" onclick="payRemaining('${e.id}')">Quitar restante</button>` : ''}
                 <button class="danger" onclick="deleteExpense('${e.id}')">${e.groupId ? 'Excluir parcela' : 'Excluir gasto'}</button>
                 ${e.groupId ? `<button class="danger" onclick="deleteInstallmentGroup('${e.groupId}')">Excluir compra inteira</button>` : ''}
@@ -1171,6 +1250,18 @@
         openExpenseDetails.clear();
       }
       renderExpenses();
+    }
+
+    function toggleExpensesList() {
+      expenseListOpen = !expenseListOpen;
+      localStorage.setItem(STORE_KEY + '-expense-list-open', expenseListOpen ? '1' : '0');
+      renderExpenses();
+    }
+
+    function toggleCategorySummary() {
+      categorySummaryOpen = !categorySummaryOpen;
+      localStorage.setItem(STORE_KEY + '-category-summary-open', categorySummaryOpen ? '1' : '0');
+      renderDashboard();
     }
 
     function toggleInstallmentPaid(expenseId, checked) {
@@ -1338,8 +1429,8 @@
       const amounts = installmentAmounts(amount, installmentCount);
 
       amounts.forEach((parcelAmount, index) => {
-        const parcelDate = installmentCount > 1 ? addMonthsToDate(firstDueDate, index) : date;
-        const parcelDueDate = installmentCount > 1 ? parcelDate : (document.getElementById('expenseDueDate').value || '');
+        const parcelDate = addMonthsToDate(firstDueDate, index);
+        const parcelDueDate = parcelDate;
         const parcelCents = cents(parcelAmount);
         const paidForParcelCents = Math.min(paidLeftCents, parcelCents);
         paidLeftCents -= paidForParcelCents;
@@ -1376,6 +1467,56 @@
       syncMonthInputs();
       saveState();
       showScreen('dashboard');
+    }
+
+    function saveReserve() {
+      state.emergencyReserve = parseMoney(document.getElementById('emergencyReserve').value);
+      state.emergencyTarget = parseMoney(document.getElementById('emergencyTarget').value);
+      saveState();
+    }
+
+    function editExpense(expenseId) {
+      const e = state.expenses.find(x => x.id === expenseId);
+      if (!e) return;
+      const group = e.groupId ? state.expenses.filter(x => x.groupId === e.groupId) : [e];
+      const editAll = e.groupId ? confirm('Essa compra tem parcelas. Clique OK para editar nome/categoria/forma/observação em todas as parcelas. Clique Cancelar para editar só esta parcela.') : false;
+      const currentName = e.originalName || e.name || '';
+      const newName = prompt('Nome do gasto:', currentName);
+      if (newName === null) return;
+      const newCategory = prompt('Categoria:', e.category || 'Outros');
+      if (newCategory === null) return;
+      const newMethod = prompt('Forma de compra:', e.method || 'Nubank Crédito');
+      if (newMethod === null) return;
+      const newNote = prompt('Observação:', e.note || '');
+      if (newNote === null) return;
+
+      if (editAll) {
+        group.forEach(p => {
+          p.originalName = newName.trim() || currentName;
+          p.name = Number(p.installmentTotal || 1) > 1 ? `${p.originalName} (${p.installmentNumber}/${p.installmentTotal})` : p.originalName;
+          p.category = newCategory.trim() || p.category;
+          p.method = newMethod.trim() || p.method;
+          p.note = newNote.trim();
+        });
+      } else {
+        const newAmountText = prompt('Valor desta parcela/gasto:', String(Number(e.amount || 0)).replace('.', ','));
+        if (newAmountText === null) return;
+        const newChargeDate = prompt('Data de cobrança/vencimento (AAAA-MM-DD):', e.date || today());
+        if (newChargeDate === null) return;
+        const amount = parseMoney(newAmountText);
+        if (amount <= 0) { alert('Valor inválido.'); return; }
+        e.originalName = newName.trim() || currentName;
+        e.name = Number(e.installmentTotal || 1) > 1 ? `${e.originalName} (${e.installmentNumber}/${e.installmentTotal})` : e.originalName;
+        e.amount = amount;
+        e.date = newChargeDate || e.date;
+        e.dueDate = e.date;
+        e.category = newCategory.trim() || e.category;
+        e.method = newMethod.trim() || e.method;
+        e.note = newNote.trim();
+        selectedMonth = monthKey(e.date);
+        syncMonthInputs();
+      }
+      saveState();
     }
 
     function addPayment(expenseId) {
@@ -1524,8 +1665,11 @@
 
     document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
     document.getElementById('toggleExpenseDetailsBtn').addEventListener('click', toggleExpenseDetailsMode);
+    document.getElementById('toggleExpensesListBtn').addEventListener('click', toggleExpensesList);
+    document.getElementById('toggleCategorySummaryBtn').addEventListener('click', toggleCategorySummary);
     document.getElementById('addIncomeBtn').addEventListener('click', addIncome);
     document.getElementById('saveCashBtn').addEventListener('click', saveCash);
+    document.getElementById('saveReserveBtn').addEventListener('click', saveReserve);
     document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
     document.getElementById('addMethodBtn').addEventListener('click', addMethod);
     document.getElementById('exportBtn').addEventListener('click', exportData);

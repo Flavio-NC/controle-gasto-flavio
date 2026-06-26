@@ -1,15 +1,8 @@
-COMO ATUALIZAR NO GITHUB
+COMO INSTALAR NO ANDROID
 
-1. Entre no repositório controle-gasto-flavio.
-2. Envie/substitua estes arquivos na tela principal do repositório:
-   - index.html
-   - manifest.json
-   - service-worker.js
-   - icon-192.png
-   - icon-512.png
-3. Clique em Commit changes.
-4. Aguarde o GitHub Pages publicar.
-5. No celular, abra o link do app no Chrome.
+1. Hospede os arquivos no GitHub Pages.
+2. Abra o link HTTPS do app no Google Chrome do celular.
+3. Toque nos três pontinhos do Chrome.
+4. Escolha "Instalar app" ou "Adicionar à tela inicial".
 
-IMPORTANTE
-Se o app ainda aparecer antigo, abra o link e atualize a página duas vezes, ou limpe o cache/site data do Chrome para esse site.
+Antes de atualizar uma versão antiga, exporte um backup no app antigo e importe depois na versão nova.
