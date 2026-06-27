@@ -182,6 +182,17 @@
       min-height: 44px;
       border-radius: 14px;
       text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+    .tab .menuIcon {
+      width: 24px;
+      min-width: 24px;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1;
     }
     .tab.active { color: var(--white); background: rgba(56,189,248,.12); border-color: rgba(56,189,248,.25); }
 
@@ -291,16 +302,16 @@
         <nav id="appNav">
           <button class="secondary navToggle" id="navMenuBtn" type="button" aria-label="Abrir menu">☰</button>
           <div class="tabs" id="navMenuPanel">
-            <button class="tab active" data-screen="dashboard">Resumo</button>
-            <button class="tab" data-screen="cash">Ajuste do caixa</button>
-            <button class="tab" data-screen="reserve">Reserva de emergência</button>
-            <button class="tab" data-screen="card">Pagar cartão</button>
-            <button class="tab" data-screen="thirdparty">Compras de terceiros</button>
-            <button class="tab" data-screen="expense">Gastos</button>
-            <button class="tab" data-screen="income">Ganhos</button>
-            <button class="tab" data-screen="spreadsheets">Planilhas</button>
-            <button class="tab" data-screen="charts">Gráficos</button>
-            <button class="tab" data-screen="data">Dados</button>
+            <button class="tab" data-screen="cash"><span class="menuIcon">💰</span><span>Ajuste do caixa</span></button>
+            <button class="tab" data-screen="thirdparty"><span class="menuIcon">👥</span><span>Compras de terceiros</span></button>
+            <button class="tab" data-screen="data"><span class="menuIcon">💾</span><span>Dados</span></button>
+            <button class="tab" data-screen="income"><span class="menuIcon">📥</span><span>Ganhos</span></button>
+            <button class="tab" data-screen="expense"><span class="menuIcon">🧾</span><span>Gastos</span></button>
+            <button class="tab" data-screen="charts"><span class="menuIcon">📊</span><span>Gráficos</span></button>
+            <button class="tab" data-screen="card"><span class="menuIcon">💳</span><span>Pagar cartão</span></button>
+            <button class="tab" data-screen="spreadsheets"><span class="menuIcon">📋</span><span>Planilhas</span></button>
+            <button class="tab" data-screen="reserve"><span class="menuIcon">🛡️</span><span>Reserva de emergência</span></button>
+            <button class="tab active" data-screen="dashboard"><span class="menuIcon">🏠</span><span>Resumo</span></button>
           </div>
         </nav>
         <h1>Meu Caixa</h1>
@@ -598,9 +609,31 @@
             <div class="mini"><span class="small">Falta receber</span><strong id="thirdPartyMonthRemaining" class="amount warn">R$ 0,00</strong></div>
           </div>
           <div id="thirdPartySummaryTable" class="tableWrap" style="margin-top:12px;"></div>
-          <h2 style="margin-top:16px;">Compras lançadas</h2>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Compras lançadas</h2>
+            <div class="small">Lista separada das compras feitas por terceiros no mês escolhido.</div>
+          </div>
+          <button id="toggleThirdPartyPurchasesListBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="thirdPartyPurchasesListWrap">
           <div id="thirdPartyList" class="list"></div>
-          <h2 style="margin-top:16px;">Pagamentos recebidos</h2>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Pagamentos recebidos</h2>
+            <div class="small">Lista separada dos pagamentos que cada pessoa fez no mês escolhido.</div>
+          </div>
+          <button id="toggleThirdPartyPaymentsListBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="thirdPartyPaymentsListWrap">
           <div id="thirdPartyPaymentsList" class="list"></div>
         </div>
       </div>
@@ -903,6 +936,8 @@
     let thirdPartyPurchaseOpen = localStorage.getItem(STORE_KEY + '-thirdparty-purchase-open') !== '0';
     let thirdPartyPaymentOpen = localStorage.getItem(STORE_KEY + '-thirdparty-payment-open') !== '0';
     let thirdPartyTableOpen = localStorage.getItem(STORE_KEY + '-thirdparty-table-open') !== '0';
+    let thirdPartyPurchasesListOpen = localStorage.getItem(STORE_KEY + '-thirdparty-purchases-list-open') !== '0';
+    let thirdPartyPaymentsListOpen = localStorage.getItem(STORE_KEY + '-thirdparty-payments-list-open') !== '0';
     let currentTheme = localStorage.getItem(STORE_KEY + '-theme') || 'dark';
     const openExpenseDetails = new Set();
     const openInstallmentGroups = new Set();
@@ -1842,6 +1877,18 @@
         tableWrap.classList.toggle('hidden', !thirdPartyTableOpen);
         tableBtn.textContent = thirdPartyTableOpen ? 'Minimizar' : 'Mostrar';
       }
+      const purchasesListWrap = document.getElementById('thirdPartyPurchasesListWrap');
+      const purchasesListBtn = document.getElementById('toggleThirdPartyPurchasesListBtn');
+      if (purchasesListWrap && purchasesListBtn) {
+        purchasesListWrap.classList.toggle('hidden', !thirdPartyPurchasesListOpen);
+        purchasesListBtn.textContent = thirdPartyPurchasesListOpen ? 'Minimizar' : 'Mostrar';
+      }
+      const paymentsListWrap = document.getElementById('thirdPartyPaymentsListWrap');
+      const paymentsListBtn = document.getElementById('toggleThirdPartyPaymentsListBtn');
+      if (paymentsListWrap && paymentsListBtn) {
+        paymentsListWrap.classList.toggle('hidden', !thirdPartyPaymentsListOpen);
+        paymentsListBtn.textContent = thirdPartyPaymentsListOpen ? 'Minimizar' : 'Mostrar';
+      }
 
       const peopleList = document.getElementById('thirdPartyPeopleList');
       if (peopleList) {
@@ -2403,6 +2450,18 @@
       renderThirdParty();
     }
 
+    function toggleThirdPartyPurchasesList() {
+      thirdPartyPurchasesListOpen = !thirdPartyPurchasesListOpen;
+      localStorage.setItem(STORE_KEY + '-thirdparty-purchases-list-open', thirdPartyPurchasesListOpen ? '1' : '0');
+      renderThirdParty();
+    }
+
+    function toggleThirdPartyPaymentsList() {
+      thirdPartyPaymentsListOpen = !thirdPartyPaymentsListOpen;
+      localStorage.setItem(STORE_KEY + '-thirdparty-payments-list-open', thirdPartyPaymentsListOpen ? '1' : '0');
+      renderThirdParty();
+    }
+
     function addIncome() {
       const name = document.getElementById('incomeName').value.trim();
       const amount = parseMoney(document.getElementById('incomeAmount').value);
@@ -2541,6 +2600,8 @@
     document.getElementById('toggleThirdPartyPurchaseBtn').addEventListener('click', toggleThirdPartyPurchase);
     document.getElementById('toggleThirdPartyPaymentBtn').addEventListener('click', toggleThirdPartyPayment);
     document.getElementById('toggleThirdPartyTableBtn').addEventListener('click', toggleThirdPartyTable);
+    document.getElementById('toggleThirdPartyPurchasesListBtn').addEventListener('click', toggleThirdPartyPurchasesList);
+    document.getElementById('toggleThirdPartyPaymentsListBtn').addEventListener('click', toggleThirdPartyPaymentsList);
     document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
     document.getElementById('addMethodBtn').addEventListener('click', addMethod);
     document.getElementById('exportBtn').addEventListener('click', exportData);
