@@ -295,6 +295,7 @@
             <button class="tab" data-screen="cash">Ajuste do caixa</button>
             <button class="tab" data-screen="reserve">Reserva de emergência</button>
             <button class="tab" data-screen="card">Pagar cartão</button>
+            <button class="tab" data-screen="thirdparty">Compras de terceiros</button>
             <button class="tab" data-screen="expense">Gastos</button>
             <button class="tab" data-screen="income">Ganhos</button>
             <button class="tab" data-screen="spreadsheets">Planilhas</button>
@@ -329,7 +330,7 @@
         <div class="card full">
           <div class="label">Caixa atual</div>
           <div id="cashNow" class="value">R$ 0,00</div>
-          <div class="small">Caixa inicial + todos os ganhos - todos os pagamentos feitos.</div>
+          <div class="small">Caixa inicial + ganhos + pagamentos recebidos de terceiros - pagamentos feitos.</div>
         </div>
         <div class="card">
           <div class="label">Reserva de emergência</div>
@@ -346,9 +347,29 @@
           <div id="monthIncome" class="value good">R$ 0,00</div>
         </div>
         <div class="card">
-          <div class="label">Cobranças do mês</div>
+          <div class="label">Meu gasto do mês</div>
           <div id="monthPurchases" class="value bad">R$ 0,00</div>
-          <div class="small">Tudo que vence/cai no mês selecionado.</div>
+          <div class="small">Suas compras que vencem/caem no mês selecionado.</div>
+        </div>
+        <div class="card">
+          <div class="label">Terceiros compraram no mês</div>
+          <div id="thirdPartyOwedMonth" class="value warn">R$ 0,00</div>
+          <div class="small">Total das compras de outras pessoas no seu cartão.</div>
+        </div>
+        <div class="card">
+          <div class="label">Terceiros já pagaram</div>
+          <div id="thirdPartyPaidMonth" class="value good">R$ 0,00</div>
+          <div class="small">Quanto eles já te pagaram no mês selecionado.</div>
+        </div>
+        <div class="card">
+          <div class="label">Falta eles pagarem</div>
+          <div id="thirdPartyRemainingMonth" class="value warn">R$ 0,00</div>
+          <div class="small">Saldo restante das compras de terceiros neste mês.</div>
+        </div>
+        <div class="card">
+          <div class="label">Meu + terceiros no mês</div>
+          <div id="monthTotalWithThirdParty" class="value bad">R$ 0,00</div>
+          <div class="small">Seu gasto do mês + compras de terceiros.</div>
         </div>
         <div class="card">
           <div class="label">Pago neste mês</div>
@@ -366,7 +387,7 @@
         <div class="card">
           <div class="label">Saldo do mês</div>
           <div id="monthBalance" class="value">R$ 0,00</div>
-          <div class="small">Ganhos do mês - pagamentos feitos no mês.</div>
+          <div class="small">Ganhos + pagamentos de terceiros - pagamentos feitos no mês.</div>
         </div>
         <div class="card">
           <div class="label">Depois de pagar tudo</div>
@@ -472,6 +493,115 @@
             <button class="secondary" id="payFullCardBtn">Quitar fatura do mês</button>
           </div>
           <div id="cardPaymentHint" class="hint">O pagamento será distribuído automaticamente nas compras/parcelas do cartão que vencem no mês escolhido.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-thirdparty" class="screen">
+      <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Pessoas cadastradas</h2>
+            <div class="small">Cadastre quem costuma comprar no seu cartão.</div>
+          </div>
+          <button id="toggleThirdPartyPeopleBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="thirdPartyPeopleWrap">
+          <div class="row">
+            <input id="newThirdPartyPerson" placeholder="Nome da pessoa. Ex: Flávia" />
+            <button id="addThirdPartyPersonBtn">Cadastrar pessoa</button>
+          </div>
+          <div id="thirdPartyPeopleList" class="list" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Nova compra de terceiro</h2>
+            <div class="small">Escolha a pessoa, lance o valor e o app soma na dívida dela do mês.</div>
+          </div>
+          <button id="toggleThirdPartyPurchaseBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="thirdPartyPurchaseWrap">
+          <div class="row">
+            <div>
+              <label for="thirdPartyPerson">Pessoa</label>
+              <select id="thirdPartyPerson"></select>
+            </div>
+            <div>
+              <label for="thirdPartyDate">Mês/data da cobrança</label>
+              <input id="thirdPartyDate" type="date" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="thirdPartyAmount">Valor da compra</label>
+              <input id="thirdPartyAmount" inputmode="decimal" placeholder="Ex: 75,00" />
+            </div>
+            <div>
+              <label for="thirdPartyNote">Observação opcional</label>
+              <input id="thirdPartyNote" placeholder="Opcional. Ex: mercado, lanche..." />
+            </div>
+          </div>
+          <div class="actions"><button id="addThirdPartyBtn">Adicionar compra</button></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Pagamento de terceiro</h2>
+            <div class="small">Use quando alguém te pagar uma parte da dívida do mês.</div>
+          </div>
+          <button id="toggleThirdPartyPaymentBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="thirdPartyPaymentWrap">
+          <div class="row">
+            <div>
+              <label for="thirdPartyPaymentPerson">Pessoa</label>
+              <select id="thirdPartyPaymentPerson"></select>
+            </div>
+            <div>
+              <label for="thirdPartyPaymentDate">Data do pagamento</label>
+              <input id="thirdPartyPaymentDate" type="date" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="thirdPartyPaymentAmount">Valor pago</label>
+              <input id="thirdPartyPaymentAmount" inputmode="decimal" placeholder="Ex: 400,00" />
+            </div>
+            <div>
+              <label for="thirdPartyPaymentMethod">Forma do pagamento</label>
+              <select id="thirdPartyPaymentMethod"></select>
+            </div>
+          </div>
+          <label for="thirdPartyPaymentNote">Observação opcional</label>
+          <input id="thirdPartyPaymentNote" placeholder="Opcional. Ex: pagou parte da fatura" />
+          <div class="actions"><button class="good" id="addThirdPartyPaymentBtn">Registrar pagamento</button></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Resumo de terceiros - mês selecionado</h2>
+            <div class="small">Deslize para esquerda/direita para trocar de mês, igual no resumo.</div>
+          </div>
+          <button id="toggleThirdPartyTableBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="thirdPartyTableWrap">
+          <div class="miniGrid">
+            <div class="mini"><span class="small">Compras do mês</span><strong id="thirdPartyMonthTotal" class="amount warn">R$ 0,00</strong></div>
+            <div class="mini"><span class="small">Já pagaram</span><strong id="thirdPartyMonthPaid" class="amount income">R$ 0,00</strong></div>
+            <div class="mini"><span class="small">Falta receber</span><strong id="thirdPartyMonthRemaining" class="amount warn">R$ 0,00</strong></div>
+          </div>
+          <div id="thirdPartySummaryTable" class="tableWrap" style="margin-top:12px;"></div>
+          <h2 style="margin-top:16px;">Compras lançadas</h2>
+          <div id="thirdPartyList" class="list"></div>
+          <h2 style="margin-top:16px;">Pagamentos recebidos</h2>
+          <div id="thirdPartyPaymentsList" class="list"></div>
         </div>
       </div>
     </section>
@@ -751,8 +881,8 @@
   </main>
 
   <script>
-    const STORE_KEY = 'meu_caixa_v4';
-    const OLD_STORE_KEYS = ['meu_caixa_v3', 'meu_caixa_v2', 'meu_caixa_v1'];
+    const STORE_KEY = 'meu_caixa_v5';
+    const OLD_STORE_KEYS = ['meu_caixa_v4', 'meu_caixa_v3', 'meu_caixa_v2', 'meu_caixa_v1'];
     const defaultCategories = [
       'Padaria', 'Roupa/Calçados', 'TV', 'Assinaturas', 'Transplante/Implante',
       'Supermercado', 'Lanche/Açaí/Marmita', 'Casa', 'Air Fryer', 'Moto',
@@ -769,6 +899,10 @@
     let expenseListOpen = localStorage.getItem(STORE_KEY + '-expense-list-open') !== '0';
     let categorySummaryOpen = localStorage.getItem(STORE_KEY + '-category-summary-open') !== '0';
     let cardPanelOpen = localStorage.getItem(STORE_KEY + '-card-panel-open') !== '0';
+    let thirdPartyPeopleOpen = localStorage.getItem(STORE_KEY + '-thirdparty-people-open') !== '0';
+    let thirdPartyPurchaseOpen = localStorage.getItem(STORE_KEY + '-thirdparty-purchase-open') !== '0';
+    let thirdPartyPaymentOpen = localStorage.getItem(STORE_KEY + '-thirdparty-payment-open') !== '0';
+    let thirdPartyTableOpen = localStorage.getItem(STORE_KEY + '-thirdparty-table-open') !== '0';
     let currentTheme = localStorage.getItem(STORE_KEY + '-theme') || 'dark';
     const openExpenseDetails = new Set();
     const openInstallmentGroups = new Set();
@@ -788,7 +922,7 @@
     }
 
     function blankState() {
-      return { version: 4, initialCash: 0, emergencyReserve: 0, emergencyTarget: 0, expenses: [], incomes: [], categories: defaultCategories, methods: defaultMethods };
+      return { version: 5, initialCash: 0, emergencyReserve: 0, emergencyTarget: 0, expenses: [], incomes: [], thirdPartyPeople: [], thirdPartyPurchases: [], thirdPartyPayments: [], categories: defaultCategories, methods: defaultMethods };
     }
 
     function migrateState(data) {
@@ -816,13 +950,44 @@
           payments: payments.map(p => ({ id: p.id || uid(), date: p.date || e.date || today(), amount: Number(p.amount || 0), method: p.method || e.method || 'PIX', note: p.note || '' }))
         };
       }) : [];
+
+      const oldThirdPurchases = Array.isArray(data.thirdPartyPurchases) ? data.thirdPartyPurchases : [];
+      let thirdPartyPeople = Array.isArray(data.thirdPartyPeople)
+        ? data.thirdPartyPeople.map(p => ({ id: p.id || uid(), name: p.name || 'Pessoa' })).filter(p => p.name)
+        : [];
+      const hasOldPurchasesWithoutPerson = oldThirdPurchases.some(t => !t.personId);
+      if (!thirdPartyPeople.length && oldThirdPurchases.length) {
+        thirdPartyPeople = [{ id: 'third-default', name: 'Terceiros' }];
+      } else if (hasOldPurchasesWithoutPerson && !thirdPartyPeople.some(p => p.id === 'third-default')) {
+        thirdPartyPeople.push({ id: 'third-default', name: 'Terceiros' });
+      }
+      const fallbackPersonId = thirdPartyPeople[0]?.id || '';
+      const thirdPartyPurchases = oldThirdPurchases.map(t => ({
+        id: t.id || uid(),
+        personId: t.personId || fallbackPersonId,
+        date: t.date || today(),
+        amount: Number(t.amount || 0),
+        note: t.note || ''
+      }));
+      const thirdPartyPayments = Array.isArray(data.thirdPartyPayments) ? data.thirdPartyPayments.map(p => ({
+        id: p.id || uid(),
+        personId: p.personId || fallbackPersonId,
+        date: p.date || today(),
+        amount: Number(p.amount || 0),
+        method: p.method || 'PIX',
+        note: p.note || ''
+      })) : [];
+
       return {
-        version: 4,
+        version: 5,
         initialCash: Number(data.initialCash || 0),
         emergencyReserve: Number(data.emergencyReserve || 0),
         emergencyTarget: Number(data.emergencyTarget || 0),
         expenses,
         incomes: Array.isArray(data.incomes) ? data.incomes.map(i => ({ id: i.id || uid(), date: i.date || today(), name: i.name || 'Ganho', amount: Number(i.amount || 0), category: i.category || 'Outros' })) : [],
+        thirdPartyPeople,
+        thirdPartyPurchases,
+        thirdPartyPayments,
         categories: Array.isArray(data.categories) && data.categories.length ? unique([...data.categories, ...defaultCategories]) : base.categories,
         methods: Array.isArray(data.methods) && data.methods.length ? unique([...data.methods, ...defaultMethods]) : base.methods
       };
@@ -885,6 +1050,10 @@
       if (monthInput) monthInput.value = selectedMonth;
       if (sheetInput) sheetInput.value = selectedMonth;
       if (chartInput) chartInput.value = selectedMonth;
+      const thirdDateInput = document.getElementById('thirdPartyDate');
+      if (thirdDateInput && monthKey(thirdDateInput.value) !== selectedMonth) thirdDateInput.value = selectedMonth + '-01';
+      const thirdPayDateInput = document.getElementById('thirdPartyPaymentDate');
+      if (thirdPayDateInput && monthKey(thirdPayDateInput.value) !== selectedMonth) thirdPayDateInput.value = selectedMonth + '-01';
     }
     function setSelectedMonth(month) {
       selectedMonth = month || currentMonth();
@@ -895,6 +1064,10 @@
     function setupDates() {
       document.getElementById('expenseDate').value = today();
       document.getElementById('incomeDate').value = today();
+      const thirdDateInput = document.getElementById('thirdPartyDate');
+      if (thirdDateInput) thirdDateInput.value = selectedMonth === currentMonth() ? today() : selectedMonth + '-01';
+      const thirdPayDateInput = document.getElementById('thirdPartyPaymentDate');
+      if (thirdPayDateInput) thirdPayDateInput.value = selectedMonth === currentMonth() ? today() : selectedMonth + '-01';
       document.getElementById('monthFilter').value = selectedMonth;
       document.getElementById('sheetMonthFilter').value = selectedMonth;
       document.getElementById('chartMonthFilter').value = selectedMonth;
@@ -947,17 +1120,21 @@
       const expensesMonth = state.expenses.filter(x => monthKey(x.date) === selectedMonth);
       const incomesMonth = state.incomes.filter(x => monthKey(x.date) === selectedMonth).reduce((s,x) => s + Number(x.amount || 0), 0);
       const purchasesMonth = expensesMonth.reduce((s,x) => s + Number(x.amount || 0), 0);
+      const thirdPartyMonth = thirdPartyTotal(selectedMonth);
+      const thirdPartyPaid = thirdPartyPaidTotal(selectedMonth);
+      const thirdPartyRemaining = thirdPartyRemainingTotal(selectedMonth);
       const payments = paymentsAll();
       const paymentsMonth = payments.filter(x => monthKey(x.date) === selectedMonth).reduce((s,x) => s + Number(x.amount || 0), 0);
       const totalIncomes = state.incomes.reduce((s,x) => s + Number(x.amount || 0), 0);
+      const thirdPartyPaymentsAll = (state.thirdPartyPayments || []).reduce((s,x) => s + Number(x.amount || 0), 0);
       const totalPayments = payments.reduce((s,x) => s + Number(x.amount || 0), 0);
       const monthRemaining = expensesMonth.reduce((s,x) => s + remainingForExpense(x), 0);
       const allRemaining = state.expenses.reduce((s,x) => s + remainingForExpense(x), 0);
-      const cashNow = Number(state.initialCash || 0) + totalIncomes - totalPayments;
+      const cashNow = Number(state.initialCash || 0) + totalIncomes + thirdPartyPaymentsAll - totalPayments;
       const emergencyReserve = Number(state.emergencyReserve || 0);
       const emergencyTarget = Number(state.emergencyTarget || 0);
       const freeCash = cashNow - emergencyReserve;
-      return { incomesMonth, purchasesMonth, paymentsMonth, monthRemaining, allRemaining, cashNow, emergencyReserve, emergencyTarget, freeCash, monthBalance: incomesMonth - paymentsMonth, afterAllPending: cashNow - allRemaining };
+      return { incomesMonth, purchasesMonth, thirdPartyMonth, thirdPartyPaid, thirdPartyRemaining, monthTotalWithThirdParty: purchasesMonth + thirdPartyMonth, paymentsMonth, monthRemaining, allRemaining, cashNow, emergencyReserve, emergencyTarget, freeCash, monthBalance: incomesMonth + thirdPartyPaid - paymentsMonth, afterAllPending: cashNow - allRemaining };
     }
 
     function renderDashboard() {
@@ -969,6 +1146,14 @@
       document.getElementById('freeCashValue').className = 'value ' + (t.freeCash >= 0 ? 'good' : 'bad');
       document.getElementById('monthIncome').textContent = money(t.incomesMonth);
       document.getElementById('monthPurchases').textContent = money(t.purchasesMonth);
+      const thirdPartyOwedEl = document.getElementById('thirdPartyOwedMonth');
+      if (thirdPartyOwedEl) thirdPartyOwedEl.textContent = money(t.thirdPartyMonth);
+      const thirdPartyPaidEl = document.getElementById('thirdPartyPaidMonth');
+      if (thirdPartyPaidEl) thirdPartyPaidEl.textContent = money(t.thirdPartyPaid);
+      const thirdPartyRemainingEl = document.getElementById('thirdPartyRemainingMonth');
+      if (thirdPartyRemainingEl) thirdPartyRemainingEl.textContent = money(t.thirdPartyRemaining);
+      const totalWithThirdPartyEl = document.getElementById('monthTotalWithThirdParty');
+      if (totalWithThirdPartyEl) totalWithThirdPartyEl.textContent = money(t.monthTotalWithThirdParty);
       document.getElementById('monthPayments').textContent = money(t.paymentsMonth);
       document.getElementById('monthRemaining').textContent = money(t.monthRemaining);
       document.getElementById('allRemaining').textContent = money(t.allRemaining);
@@ -1132,6 +1317,53 @@
       return state.incomes
         .filter(i => monthKey(i.date) === month)
         .reduce((s, i) => s + Number(i.amount || 0), 0);
+    }
+
+    function thirdPartyPeople() {
+      state.thirdPartyPeople = state.thirdPartyPeople || [];
+      return state.thirdPartyPeople;
+    }
+
+    function personName(personId) {
+      return thirdPartyPeople().find(p => p.id === personId)?.name || 'Sem pessoa';
+    }
+
+    function monthlyThirdPartyPurchases(month = selectedMonth) {
+      return [...(state.thirdPartyPurchases || [])]
+        .filter(t => monthKey(t.date) === month)
+        .sort((a,b) => (a.date || '').localeCompare(b.date || '') || personName(a.personId).localeCompare(personName(b.personId)));
+    }
+
+    function monthlyThirdPartyPayments(month = selectedMonth) {
+      return [...(state.thirdPartyPayments || [])]
+        .filter(p => monthKey(p.date) === month)
+        .sort((a,b) => (a.date || '').localeCompare(b.date || '') || personName(a.personId).localeCompare(personName(b.personId)));
+    }
+
+    function thirdPartyStats(month = selectedMonth) {
+      const people = thirdPartyPeople();
+      const purchases = monthlyThirdPartyPurchases(month);
+      const payments = monthlyThirdPartyPayments(month);
+      const rows = people.map(person => {
+        const total = purchases.filter(t => t.personId === person.id).reduce((s, t) => s + Number(t.amount || 0), 0);
+        const paid = payments.filter(p => p.personId === person.id).reduce((s, p) => s + Number(p.amount || 0), 0);
+        return { person, total, paid, remaining: Math.max(0, total - paid) };
+      }).filter(row => row.total > 0 || row.paid > 0 || people.length <= 12);
+      const total = purchases.reduce((s, t) => s + Number(t.amount || 0), 0);
+      const paid = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
+      return { rows, total, paid, remaining: Math.max(0, total - paid), purchases, payments };
+    }
+
+    function thirdPartyTotal(month = selectedMonth) {
+      return thirdPartyStats(month).total;
+    }
+
+    function thirdPartyPaidTotal(month = selectedMonth) {
+      return thirdPartyStats(month).paid;
+    }
+
+    function thirdPartyRemainingTotal(month = selectedMonth) {
+      return thirdPartyStats(month).remaining;
     }
 
     function expenseSummaryBy(field, month = selectedMonth) {
@@ -1308,6 +1540,13 @@
         const previous = cardPaymentMethod.value || preferred;
         cardPaymentMethod.innerHTML = methodOpts;
         cardPaymentMethod.value = state.methods.includes(previous) ? previous : preferred;
+      }
+      const thirdPayMethod = document.getElementById('thirdPartyPaymentMethod');
+      if (thirdPayMethod) {
+        const preferred = state.methods.includes('Nubank PIX') ? 'Nubank PIX' : (state.methods.includes('PIX') ? 'PIX' : state.methods[0]);
+        const previous = thirdPayMethod.value || preferred;
+        thirdPayMethod.innerHTML = methodOpts;
+        thirdPayMethod.value = state.methods.includes(previous) ? previous : preferred;
       }
     }
 
@@ -1566,6 +1805,137 @@
         </div>`).join('');
     }
 
+    function renderThirdParty() {
+      const people = thirdPartyPeople();
+      const personOpts = people.length
+        ? people.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('')
+        : '<option value="">Cadastre uma pessoa primeiro</option>';
+      ['thirdPartyPerson', 'thirdPartyPaymentPerson'].forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        const previous = select.value;
+        select.innerHTML = personOpts;
+        if (people.some(p => p.id === previous)) select.value = previous;
+      });
+
+      const peopleWrap = document.getElementById('thirdPartyPeopleWrap');
+      const peopleBtn = document.getElementById('toggleThirdPartyPeopleBtn');
+      if (peopleWrap && peopleBtn) {
+        peopleWrap.classList.toggle('hidden', !thirdPartyPeopleOpen);
+        peopleBtn.textContent = thirdPartyPeopleOpen ? 'Minimizar' : 'Mostrar';
+      }
+      const purchaseWrap = document.getElementById('thirdPartyPurchaseWrap');
+      const purchaseBtn = document.getElementById('toggleThirdPartyPurchaseBtn');
+      if (purchaseWrap && purchaseBtn) {
+        purchaseWrap.classList.toggle('hidden', !thirdPartyPurchaseOpen);
+        purchaseBtn.textContent = thirdPartyPurchaseOpen ? 'Minimizar' : 'Mostrar';
+      }
+      const paymentWrap = document.getElementById('thirdPartyPaymentWrap');
+      const paymentBtn = document.getElementById('toggleThirdPartyPaymentBtn');
+      if (paymentWrap && paymentBtn) {
+        paymentWrap.classList.toggle('hidden', !thirdPartyPaymentOpen);
+        paymentBtn.textContent = thirdPartyPaymentOpen ? 'Minimizar' : 'Mostrar';
+      }
+      const tableWrap = document.getElementById('thirdPartyTableWrap');
+      const tableBtn = document.getElementById('toggleThirdPartyTableBtn');
+      if (tableWrap && tableBtn) {
+        tableWrap.classList.toggle('hidden', !thirdPartyTableOpen);
+        tableBtn.textContent = thirdPartyTableOpen ? 'Minimizar' : 'Mostrar';
+      }
+
+      const peopleList = document.getElementById('thirdPartyPeopleList');
+      if (peopleList) {
+        peopleList.innerHTML = people.length ? people.map(p => `
+          <div class="item categoryLine">
+            <strong>${escapeHtml(p.name)}</strong>
+            <div class="actions" style="margin-top:0; justify-content:flex-end;">
+              <button class="secondary" onclick="editThirdPartyPerson('${p.id}')">Editar</button>
+              <button class="danger" onclick="deleteThirdPartyPerson('${p.id}')">Excluir</button>
+            </div>
+          </div>`).join('') : '<div class="empty">Nenhuma pessoa cadastrada ainda.</div>';
+      }
+
+      const stats = thirdPartyStats(selectedMonth);
+      const totalEl = document.getElementById('thirdPartyMonthTotal');
+      const paidEl = document.getElementById('thirdPartyMonthPaid');
+      const remainingEl = document.getElementById('thirdPartyMonthRemaining');
+      if (totalEl) totalEl.textContent = money(stats.total);
+      if (paidEl) paidEl.textContent = money(stats.paid);
+      if (remainingEl) remainingEl.textContent = money(stats.remaining);
+
+      const summaryBox = document.getElementById('thirdPartySummaryTable');
+      if (summaryBox) {
+        if (!people.length) {
+          summaryBox.innerHTML = '<div class="empty">Cadastre uma pessoa para começar.</div>';
+        } else {
+          const rows = stats.rows.length ? stats.rows : people.map(person => ({ person, total: 0, paid: 0, remaining: 0 }));
+          summaryBox.innerHTML = `<table aria-label="Resumo de terceiros do mês">
+            <thead><tr><th>Nome</th><th class="tdRight">Deve no mês</th><th class="tdRight">Já pagou</th><th class="tdRight">Resta</th><th>Ações</th></tr></thead>
+            <tbody>
+              ${rows.map(row => `<tr>
+                <td><strong>${escapeHtml(row.person.name)}</strong></td>
+                <td class="tdRight">${money(row.total)}</td>
+                <td class="tdRight">${money(row.paid)}</td>
+                <td class="tdRight"><strong>${money(row.remaining)}</strong></td>
+                <td><button class="good" onclick="payThirdPartyPerson('${row.person.id}')">Pagar</button></td>
+              </tr>`).join('')}
+              <tr>
+                <td><strong>SOMA</strong></td>
+                <td class="tdRight"><strong>${money(stats.total)}</strong></td>
+                <td class="tdRight"><strong>${money(stats.paid)}</strong></td>
+                <td class="tdRight"><strong>${money(stats.remaining)}</strong></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>`;
+        }
+      }
+
+      const purchasesBox = document.getElementById('thirdPartyList');
+      if (purchasesBox) {
+        if (!stats.purchases.length) {
+          purchasesBox.innerHTML = '<div class="empty">Nenhuma compra de terceiro cadastrada neste mês.</div>';
+        } else {
+          purchasesBox.innerHTML = stats.purchases.map((t, index) => `
+            <div class="item">
+              <div class="itemTop">
+                <div>
+                  <div class="itemTitle">${escapeHtml(personName(t.personId))}</div>
+                  <div class="itemMeta">Compra ${index + 1} • ${formatDate(t.date)}${t.note ? ' • ' + escapeHtml(t.note) : ''}</div>
+                </div>
+                <div class="amount warn">${money(t.amount)}</div>
+              </div>
+              <div class="actions">
+                <button class="secondary" onclick="editThirdPartyPurchase('${t.id}')">Editar</button>
+                <button class="danger" onclick="deleteThirdPartyPurchase('${t.id}')">Excluir</button>
+              </div>
+            </div>`).join('');
+        }
+      }
+
+      const paymentsBox = document.getElementById('thirdPartyPaymentsList');
+      if (paymentsBox) {
+        if (!stats.payments.length) {
+          paymentsBox.innerHTML = '<div class="empty">Nenhum pagamento recebido neste mês.</div>';
+        } else {
+          paymentsBox.innerHTML = stats.payments.map(p => `
+            <div class="item">
+              <div class="itemTop">
+                <div>
+                  <div class="itemTitle">${escapeHtml(personName(p.personId))}</div>
+                  <div class="itemMeta">${formatDate(p.date)} • ${escapeHtml(p.method || 'PIX')}${p.note ? ' • ' + escapeHtml(p.note) : ''}</div>
+                </div>
+                <div class="amount income">${money(p.amount)}</div>
+              </div>
+              <div class="actions">
+                <button class="secondary" onclick="editThirdPartyPayment('${p.id}')">Editar</button>
+                <button class="danger" onclick="deleteThirdPartyPayment('${p.id}')">Excluir</button>
+              </div>
+            </div>`).join('');
+        }
+      }
+    }
+
     function renderSpreadsheet() {
       const items = [...state.expenses]
         .filter(e => monthKey(e.date) === selectedMonth)
@@ -1678,7 +2048,7 @@
         </div>`).join('');
     }
 
-    function render() { renderSelects(); renderDashboard(); renderExpenses(); renderIncomes(); renderSpreadsheet(); renderCharts(); renderCategories(); renderMethods(); }
+    function render() { renderSelects(); renderDashboard(); renderExpenses(); renderIncomes(); renderThirdParty(); renderSpreadsheet(); renderCharts(); renderCategories(); renderMethods(); }
 
     function addExpense() {
       const name = document.getElementById('expenseName').value.trim();
@@ -1862,6 +2232,177 @@
       }
     }
 
+    function addThirdPartyPerson() {
+      const input = document.getElementById('newThirdPartyPerson');
+      const name = input.value.trim();
+      if (!name) { alert('Digite o nome da pessoa.'); return; }
+      state.thirdPartyPeople = state.thirdPartyPeople || [];
+      if (state.thirdPartyPeople.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+        alert('Essa pessoa já está cadastrada.');
+        return;
+      }
+      state.thirdPartyPeople.push({ id: uid(), name });
+      input.value = '';
+      saveState();
+    }
+
+    function editThirdPartyPerson(personId) {
+      const person = thirdPartyPeople().find(p => p.id === personId);
+      if (!person) return;
+      const newName = prompt('Nome da pessoa:', person.name);
+      if (newName === null) return;
+      const clean = newName.trim();
+      if (!clean) { alert('O nome não pode ficar vazio.'); return; }
+      person.name = clean;
+      saveState();
+    }
+
+    function deleteThirdPartyPerson(personId) {
+      const hasPurchases = (state.thirdPartyPurchases || []).some(t => t.personId === personId);
+      const hasPayments = (state.thirdPartyPayments || []).some(p => p.personId === personId);
+      if (hasPurchases || hasPayments) {
+        alert('Essa pessoa já tem compras ou pagamentos lançados. Exclua os lançamentos dela antes.');
+        return;
+      }
+      if (!confirm('Excluir esta pessoa cadastrada?')) return;
+      state.thirdPartyPeople = thirdPartyPeople().filter(p => p.id !== personId);
+      saveState();
+    }
+
+    function addThirdPartyPurchase() {
+      const personId = document.getElementById('thirdPartyPerson').value;
+      const amount = parseMoney(document.getElementById('thirdPartyAmount').value);
+      const date = document.getElementById('thirdPartyDate').value || today();
+      const note = document.getElementById('thirdPartyNote').value.trim();
+      if (!personId) { alert('Cadastre e escolha uma pessoa primeiro.'); return; }
+      if (amount <= 0) { alert('Digite um valor válido para a compra.'); return; }
+      state.thirdPartyPurchases = state.thirdPartyPurchases || [];
+      state.thirdPartyPurchases.push({ id: uid(), personId, date, amount, note });
+      document.getElementById('thirdPartyAmount').value = '';
+      document.getElementById('thirdPartyNote').value = '';
+      selectedMonth = monthKey(date);
+      syncMonthInputs();
+      saveState();
+      showScreen('thirdparty');
+    }
+
+    function editThirdPartyPurchase(id) {
+      const item = (state.thirdPartyPurchases || []).find(t => t.id === id);
+      if (!item) return;
+      const newAmountText = prompt('Valor da compra:', String(Number(item.amount || 0)).replace('.', ','));
+      if (newAmountText === null) return;
+      const newDate = prompt('Data/mês da cobrança (AAAA-MM-DD):', item.date || today());
+      if (newDate === null) return;
+      const newNote = prompt('Observação opcional:', item.note || '');
+      if (newNote === null) return;
+      const amount = parseMoney(newAmountText);
+      if (amount <= 0) { alert('Valor inválido.'); return; }
+      item.amount = amount;
+      item.date = newDate || item.date;
+      item.note = newNote.trim();
+      selectedMonth = monthKey(item.date);
+      syncMonthInputs();
+      saveState();
+    }
+
+    function deleteThirdPartyPurchase(id) {
+      if (!confirm('Excluir esta compra?')) return;
+      state.thirdPartyPurchases = (state.thirdPartyPurchases || []).filter(t => t.id !== id);
+      saveState();
+    }
+
+    function addThirdPartyPayment() {
+      const personId = document.getElementById('thirdPartyPaymentPerson').value;
+      const amount = parseMoney(document.getElementById('thirdPartyPaymentAmount').value);
+      const date = document.getElementById('thirdPartyPaymentDate').value || today();
+      const method = document.getElementById('thirdPartyPaymentMethod').value || 'PIX';
+      const note = document.getElementById('thirdPartyPaymentNote').value.trim();
+      if (!personId) { alert('Cadastre e escolha uma pessoa primeiro.'); return; }
+      if (amount <= 0) { alert('Digite um valor válido para o pagamento.'); return; }
+      const stats = thirdPartyStats(monthKey(date)).rows.find(r => r.person.id === personId);
+      if (stats && amount > stats.remaining && !confirm('Esse pagamento é maior que o restante da pessoa neste mês. Quer salvar mesmo assim?')) return;
+      state.thirdPartyPayments = state.thirdPartyPayments || [];
+      state.thirdPartyPayments.push({ id: uid(), personId, date, amount, method, note });
+      document.getElementById('thirdPartyPaymentAmount').value = '';
+      document.getElementById('thirdPartyPaymentNote').value = '';
+      selectedMonth = monthKey(date);
+      syncMonthInputs();
+      saveState();
+      showScreen('thirdparty');
+    }
+
+    function payThirdPartyPerson(personId) {
+      const person = thirdPartyPeople().find(p => p.id === personId);
+      if (!person) return;
+      const row = thirdPartyStats(selectedMonth).rows.find(r => r.person.id === personId);
+      const remaining = row ? row.remaining : 0;
+      const amountText = prompt('Quanto ' + person.name + ' pagou?', remaining > 0 ? String(remaining).replace('.', ',') : '');
+      if (amountText === null) return;
+      const amount = parseMoney(amountText);
+      if (amount <= 0) { alert('Valor inválido.'); return; }
+      if (remaining > 0 && amount > remaining && !confirm('Esse pagamento é maior que o restante dela neste mês. Quer salvar mesmo assim?')) return;
+      const date = prompt('Data do pagamento (AAAA-MM-DD):', selectedMonth === currentMonth() ? today() : selectedMonth + '-01');
+      if (date === null) return;
+      state.thirdPartyPayments = state.thirdPartyPayments || [];
+      const paymentDate = date || today();
+      state.thirdPartyPayments.push({ id: uid(), personId, date: paymentDate, amount, method: 'PIX', note: 'Pagamento recebido pelo resumo' });
+      selectedMonth = monthKey(paymentDate);
+      syncMonthInputs();
+      saveState();
+    }
+
+    function editThirdPartyPayment(id) {
+      const item = (state.thirdPartyPayments || []).find(p => p.id === id);
+      if (!item) return;
+      const newAmountText = prompt('Valor pago:', String(Number(item.amount || 0)).replace('.', ','));
+      if (newAmountText === null) return;
+      const newDate = prompt('Data do pagamento (AAAA-MM-DD):', item.date || today());
+      if (newDate === null) return;
+      const newMethod = prompt('Forma do pagamento:', item.method || 'PIX');
+      if (newMethod === null) return;
+      const newNote = prompt('Observação opcional:', item.note || '');
+      if (newNote === null) return;
+      const amount = parseMoney(newAmountText);
+      if (amount <= 0) { alert('Valor inválido.'); return; }
+      item.amount = amount;
+      item.date = newDate || item.date;
+      item.method = newMethod.trim() || item.method;
+      item.note = newNote.trim();
+      selectedMonth = monthKey(item.date);
+      syncMonthInputs();
+      saveState();
+    }
+
+    function deleteThirdPartyPayment(id) {
+      if (!confirm('Excluir este pagamento recebido?')) return;
+      state.thirdPartyPayments = (state.thirdPartyPayments || []).filter(p => p.id !== id);
+      saveState();
+    }
+
+    function toggleThirdPartyPeople() {
+      thirdPartyPeopleOpen = !thirdPartyPeopleOpen;
+      localStorage.setItem(STORE_KEY + '-thirdparty-people-open', thirdPartyPeopleOpen ? '1' : '0');
+      renderThirdParty();
+    }
+
+    function toggleThirdPartyPurchase() {
+      thirdPartyPurchaseOpen = !thirdPartyPurchaseOpen;
+      localStorage.setItem(STORE_KEY + '-thirdparty-purchase-open', thirdPartyPurchaseOpen ? '1' : '0');
+      renderThirdParty();
+    }
+
+    function toggleThirdPartyPayment() {
+      thirdPartyPaymentOpen = !thirdPartyPaymentOpen;
+      localStorage.setItem(STORE_KEY + '-thirdparty-payment-open', thirdPartyPaymentOpen ? '1' : '0');
+      renderThirdParty();
+    }
+
+    function toggleThirdPartyTable() {
+      thirdPartyTableOpen = !thirdPartyTableOpen;
+      localStorage.setItem(STORE_KEY + '-thirdparty-table-open', thirdPartyTableOpen ? '1' : '0');
+      renderThirdParty();
+    }
+
     function addIncome() {
       const name = document.getElementById('incomeName').value.trim();
       const amount = parseMoney(document.getElementById('incomeAmount').value);
@@ -1993,6 +2534,13 @@
     document.getElementById('saveReserveBtn').addEventListener('click', saveReserve);
     document.getElementById('payCardAmountBtn').addEventListener('click', payCardAmount);
     document.getElementById('payFullCardBtn').addEventListener('click', payFullCardBill);
+    document.getElementById('addThirdPartyBtn').addEventListener('click', addThirdPartyPurchase);
+    document.getElementById('addThirdPartyPersonBtn').addEventListener('click', addThirdPartyPerson);
+    document.getElementById('addThirdPartyPaymentBtn').addEventListener('click', addThirdPartyPayment);
+    document.getElementById('toggleThirdPartyPeopleBtn').addEventListener('click', toggleThirdPartyPeople);
+    document.getElementById('toggleThirdPartyPurchaseBtn').addEventListener('click', toggleThirdPartyPurchase);
+    document.getElementById('toggleThirdPartyPaymentBtn').addEventListener('click', toggleThirdPartyPayment);
+    document.getElementById('toggleThirdPartyTableBtn').addEventListener('click', toggleThirdPartyTable);
     document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
     document.getElementById('addMethodBtn').addEventListener('click', addMethod);
     document.getElementById('exportBtn').addEventListener('click', exportData);
