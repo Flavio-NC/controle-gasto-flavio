@@ -294,6 +294,7 @@
             <button class="tab active" data-screen="dashboard">Resumo</button>
             <button class="tab" data-screen="cash">Ajuste do caixa</button>
             <button class="tab" data-screen="reserve">Reserva de emergência</button>
+            <button class="tab" data-screen="card">Pagar cartão</button>
             <button class="tab" data-screen="expense">Gastos</button>
             <button class="tab" data-screen="income">Ganhos</button>
             <button class="tab" data-screen="spreadsheets">Planilhas</button>
@@ -320,7 +321,7 @@
         </div>
         <button class="secondary" id="nextMonthBtn">›</button>
       </div>
-      <div class="small">Tudo abaixo muda conforme o mês escolhido.</div>
+      <div class="small">Tudo abaixo muda conforme o mês escolhido. No celular, deslize para a esquerda ou direita para trocar de mês.</div>
     </div>
 
     <section id="screen-dashboard" class="screen active">
@@ -370,48 +371,6 @@
         <div class="card">
           <div class="label">Depois de pagar tudo</div>
           <div id="afterAllPending" class="value">R$ 0,00</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="sectionHeader">
-          <div>
-            <h2>Pagar cartão</h2>
-            <div class="small">Escolha o mês da fatura e pague tudo ou em partes.</div>
-          </div>
-          <button id="toggleCardPanelBtn" class="secondary collapseBtn" type="button">Minimizar</button>
-        </div>
-        <div id="cardPaymentPanelBody">
-          <div class="row" style="margin-bottom:12px;">
-            <div>
-              <label for="cardBillMonth">Mês que desejo pagar</label>
-              <input id="cardBillMonth" type="month" />
-            </div>
-            <div>
-              <label for="cardPaymentDate">Data do pagamento</label>
-              <input id="cardPaymentDate" type="date" />
-            </div>
-          </div>
-          <div class="miniGrid">
-            <div class="mini"><span class="small">Fatura do mês escolhido</span><strong id="cardBillTotal" class="amount expense">R$ 0,00</strong></div>
-            <div class="mini"><span class="small">Pago no cartão</span><strong id="cardBillPaid" class="amount income">R$ 0,00</strong></div>
-            <div class="mini"><span class="small">Falta terminar esse mês</span><strong id="cardBillRemaining" class="amount warn">R$ 0,00</strong></div>
-          </div>
-          <div class="row" style="margin-top:12px;">
-            <div>
-              <label for="cardPaymentAmount">Valor que vou pagar</label>
-              <input id="cardPaymentAmount" inputmode="decimal" placeholder="Ex: 400" />
-            </div>
-            <div>
-              <label for="cardPaymentMethod">Forma do pagamento</label>
-              <select id="cardPaymentMethod"></select>
-            </div>
-          </div>
-          <div class="actions">
-            <button class="good" id="payCardAmountBtn">Pagar valor</button>
-            <button class="secondary" id="payFullCardBtn">Quitar fatura do mês</button>
-          </div>
-          <div id="cardPaymentHint" class="hint">O pagamento será distribuído automaticamente nas compras/parcelas do cartão que vencem no mês escolhido.</div>
         </div>
       </div>
 
@@ -470,6 +429,50 @@
         </div>
         <div class="reserveProgress"><span id="reserveProgressBar" style="width:0%"></span></div>
         <div class="actions"><button id="saveReserveBtn">Salvar reserva</button></div>
+      </div>
+    </section>
+
+    <section id="screen-card" class="screen">
+      <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Pagar cartão</h2>
+            <div class="small">Escolha o mês da fatura e pague tudo ou em partes.</div>
+          </div>
+          <button id="toggleCardPanelBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="cardPaymentPanelBody">
+          <div class="row" style="margin-bottom:12px;">
+            <div>
+              <label for="cardBillMonth">Mês que desejo pagar</label>
+              <input id="cardBillMonth" type="month" />
+            </div>
+            <div>
+              <label for="cardPaymentDate">Data do pagamento</label>
+              <input id="cardPaymentDate" type="date" />
+            </div>
+          </div>
+          <div class="miniGrid">
+            <div class="mini"><span class="small">Fatura do mês escolhido</span><strong id="cardBillTotal" class="amount expense">R$ 0,00</strong></div>
+            <div class="mini"><span class="small">Pago no cartão</span><strong id="cardBillPaid" class="amount income">R$ 0,00</strong></div>
+            <div class="mini"><span class="small">Falta terminar esse mês</span><strong id="cardBillRemaining" class="amount warn">R$ 0,00</strong></div>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <div>
+              <label for="cardPaymentAmount">Valor que vou pagar</label>
+              <input id="cardPaymentAmount" inputmode="decimal" placeholder="Ex: 400" />
+            </div>
+            <div>
+              <label for="cardPaymentMethod">Forma do pagamento</label>
+              <select id="cardPaymentMethod"></select>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="good" id="payCardAmountBtn">Pagar valor</button>
+            <button class="secondary" id="payFullCardBtn">Quitar fatura do mês</button>
+          </div>
+          <div id="cardPaymentHint" class="hint">O pagamento será distribuído automaticamente nas compras/parcelas do cartão que vencem no mês escolhido.</div>
+        </div>
       </div>
     </section>
 
@@ -1446,6 +1449,57 @@
       renderCardBill();
     }
 
+
+    function activeScreenId() {
+      const active = document.querySelector('.screen.active');
+      return active ? active.id.replace('screen-', '') : 'dashboard';
+    }
+
+    function changeMonthBySwipe(delta) {
+      if (activeScreenId() === 'card') {
+        setCardPaymentMonth(addMonths(cardPaymentMonth, delta));
+        return;
+      }
+      setSelectedMonth(addMonths(selectedMonth, delta));
+    }
+
+    function setupMonthSwipe() {
+      const area = document.querySelector('main');
+      if (!area) return;
+      let startX = 0;
+      let startY = 0;
+      let startTime = 0;
+
+      function isInteractiveTarget(target) {
+        return !!target.closest('input, select, textarea, button, a, summary, details, canvas, .tableWrap, .tabs');
+      }
+
+      area.addEventListener('touchstart', (event) => {
+        if (!event.touches || event.touches.length !== 1) return;
+        if (isInteractiveTarget(event.target)) return;
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+        startTime = Date.now();
+      }, { passive: true });
+
+      area.addEventListener('touchend', (event) => {
+        if (!startTime || !event.changedTouches || event.changedTouches.length !== 1) return;
+        if (isInteractiveTarget(event.target)) return;
+        const endX = event.changedTouches[0].clientX;
+        const endY = event.changedTouches[0].clientY;
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const elapsed = Date.now() - startTime;
+        startX = 0;
+        startY = 0;
+        startTime = 0;
+        if (elapsed > 900) return;
+        if (Math.abs(dx) < 80) return;
+        if (Math.abs(dx) < Math.abs(dy) * 1.4) return;
+        changeMonthBySwipe(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    }
+
     function applyTheme(theme) {
       currentTheme = theme === 'light' ? 'light' : 'dark';
       document.body.dataset.theme = currentTheme;
@@ -2004,6 +2058,7 @@
 
     applyTheme(currentTheme);
     setupDates();
+    setupMonthSwipe();
     updateInstallmentPreview();
     saveState();
   </script>
