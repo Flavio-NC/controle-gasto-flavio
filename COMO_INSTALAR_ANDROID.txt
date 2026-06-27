@@ -1,8 +1,6 @@
-COMO INSTALAR NO ANDROID
-
-1. Hospede os arquivos no GitHub Pages.
-2. Abra o link HTTPS do app no Google Chrome do celular.
-3. Toque nos três pontinhos do Chrome.
+Para instalar no Android:
+1. Hospede esta pasta em um endereço HTTPS, como GitHub Pages.
+2. Abra o link no Google Chrome do celular.
+3. Toque nos três pontinhos.
 4. Escolha "Instalar app" ou "Adicionar à tela inicial".
-
-Antes de atualizar uma versão antiga, exporte um backup no app antigo e importe depois na versão nova.
+5. Antes de trocar de versão, exporte backup no app antigo e importe no novo se necessário.

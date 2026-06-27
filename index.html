@@ -21,18 +21,42 @@
       --accent: #38bdf8;
       --accent2: #818cf8;
       --white: #fff;
+      --input: #0b1220;
+      --body-bg: radial-gradient(circle at top, #1e293b 0%, var(--bg) 40%, #020617 100%);
+      --header-bg: linear-gradient(180deg, rgba(15,23,42,.98), rgba(15,23,42,.82), rgba(15,23,42,0));
+      --nav-bg: rgba(2,6,23,.96);
       --shadow: 0 12px 35px rgba(0,0,0,.25);
       --radius: 18px;
+    }
+
+    body[data-theme="light"] {
+      --bg: #f1f5f9;
+      --panel: #ffffff;
+      --card: #ffffff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --line: rgba(15,23,42,.12);
+      --good: #15803d;
+      --bad: #dc2626;
+      --warn: #b45309;
+      --accent: #0ea5e9;
+      --accent2: #6366f1;
+      --white: #0f172a;
+      --input: #f8fafc;
+      --body-bg: linear-gradient(180deg, #e0f2fe 0%, #f8fafc 45%, #eef2ff 100%);
+      --header-bg: linear-gradient(180deg, rgba(248,250,252,.98), rgba(248,250,252,.88), rgba(248,250,252,0));
+      --nav-bg: rgba(255,255,255,.96);
+      --shadow: 0 12px 35px rgba(15,23,42,.12);
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 40%, #020617 100%);
+      background: var(--body-bg);
       color: var(--text);
       min-height: 100vh;
-      padding-bottom: 86px;
+      padding-bottom: 24px;
     }
 
     header {
@@ -40,18 +64,21 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      background: linear-gradient(180deg, rgba(15,23,42,.98), rgba(15,23,42,.82), rgba(15,23,42,0));
+      background: var(--header-bg);
       backdrop-filter: blur(8px);
     }
 
     .title { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-    h1 { font-size: 24px; margin: 0; letter-spacing: -.4px; }
+    .titleLeft { display:flex; align-items:center; gap:10px; min-width:0; }
+    .headerActions { display:flex; align-items:center; gap:8px; }
+    .iconBtn { width:44px; min-width:44px; height:44px; padding:0; display:grid; place-items:center; border-radius:14px; font-size:19px; }
+    h1 { font-size: 24px; margin: 0; letter-spacing: -.4px; white-space: nowrap; }
     .subtitle { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
 
     main { padding: 8px 14px 22px; max-width: 980px; margin: 0 auto; }
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .card, .panel {
-      background: linear-gradient(180deg, rgba(31,41,55,.95), rgba(17,24,39,.95));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent), color-mix(in srgb, var(--panel) 96%, transparent));
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -81,7 +108,7 @@
     }
     input, select, textarea {
       width: 100%;
-      background: #0b1220;
+      background: var(--input);
       color: var(--text);
       padding: 13px 12px;
     }
@@ -114,23 +141,47 @@
     .monthBar button { min-width: 44px; padding: 0; }
 
     nav {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      z-index: 20;
-      background: rgba(2,6,23,.92);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid var(--line);
-      padding: 9px 8px calc(9px + env(safe-area-inset-bottom));
+      position: relative;
+      z-index: 30;
+      pointer-events: auto;
+      flex: 0 0 auto;
     }
-    .tabs { max-width: 980px; margin: 0 auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    .navToggle {
+      width: 44px;
+      min-width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 14px;
+      font-size: 23px;
+      box-shadow: none;
+      pointer-events: auto;
+    }
+    .tabs {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 52px;
+      width: min(265px, calc(100vw - 28px));
+      grid-template-columns: 1fr;
+      gap: 7px;
+      background: var(--nav-bg);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 9px;
+      backdrop-filter: blur(16px);
+      pointer-events: auto;
+    }
+    nav.menuOpen .tabs { display: grid; }
     .tab {
       background: transparent;
       color: var(--muted);
       border: 1px solid transparent;
-      padding: 9px 4px;
-      font-size: 11px;
-      min-height: 48px;
+      padding: 11px 12px;
+      font-size: 14px;
+      min-height: 44px;
       border-radius: 14px;
+      text-align: left;
     }
     .tab.active { color: var(--white); background: rgba(56,189,248,.12); border-color: rgba(56,189,248,.25); }
 
@@ -142,7 +193,7 @@
       border: 1px solid var(--line);
       border-radius: 15px;
       padding: 12px;
-      background: rgba(15,23,42,.58);
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
     }
     .itemTop { display:flex; align-items:flex-start; justify-content:space-between; gap: 10px; }
     .itemTitle { font-weight: 800; margin-bottom: 4px; }
@@ -177,7 +228,7 @@
 
     .categoryLine { display:grid; grid-template-columns: 1fr auto; align-items:center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); }
     .categoryLine:last-child { border-bottom:0; }
-    .bar { height: 9px; border-radius: 999px; background: #0b1220; overflow:hidden; margin-top:6px; }
+    .bar { height: 9px; border-radius: 999px; background: var(--input); overflow:hidden; margin-top:6px; }
     .bar > span { display:block; height:100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:inherit; }
     .hint { background: rgba(56,189,248,.09); border:1px solid rgba(56,189,248,.18); color:#dbeafe; padding: 12px; border-radius: 14px; font-size: 13px; line-height: 1.45; margin-bottom:12px; }
     .hidden { display:none !important; }
@@ -189,20 +240,20 @@
     .dot { width: 11px; height: 11px; border-radius: 50%; flex: 0 0 11px; }
     .miniGrid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top: 8px; }
     @media (max-width: 620px) { .miniGrid { grid-template-columns: 1fr; } }
-    .mini { border:1px solid var(--line); background:#0b1220; padding:10px; border-radius:14px; }
+    .mini { border:1px solid var(--line); background:var(--input); padding:10px; border-radius:14px; }
     .mini strong { display:block; margin-top:4px; }
     details { margin-top: 10px; }
     summary { cursor: pointer; color: #dbeafe; font-weight: 800; font-size: 13px; }
     .paymentList { margin-top: 8px; display:flex; flex-direction:column; gap:6px; }
     .paymentItem { display:flex; justify-content:space-between; gap:8px; color:var(--muted); font-size:12px; border:1px solid var(--line); border-radius:12px; padding:8px; }
     .installmentList { margin-top: 8px; display:flex; flex-direction:column; gap:7px; }
-    .installmentLine { display:grid; grid-template-columns: 34px 1fr auto; gap:8px; align-items:center; color:var(--muted); font-size:12px; border:1px solid var(--line); border-radius:12px; padding:8px; background:#0b1220; }
+    .installmentLine { display:grid; grid-template-columns: 34px 1fr auto; gap:8px; align-items:center; color:var(--muted); font-size:12px; border:1px solid var(--line); border-radius:12px; padding:8px; background:var(--input); }
     .installmentLine input[type="checkbox"] { width: 22px; height: 22px; margin: 0; accent-color: #22c55e; }
     .installmentLine strong { color: var(--text); }
     .installmentLine .paidText { color:#bbf7d0; font-weight:800; }
     .installmentLine .partialText { color:#bfdbfe; font-weight:800; }
     .installmentLine .pendingText { color:#fde68a; font-weight:800; }
-    .tableWrap { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 15px; background: rgba(15,23,42,.58); }
+    .tableWrap { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 15px; background: color-mix(in srgb, var(--panel) 70%, transparent); }
     table { width: 100%; border-collapse: collapse; min-width: 880px; }
     th, td { padding: 11px 10px; text-align: left; border-bottom: 1px solid var(--line); font-size: 12px; vertical-align: top; }
     th { color: #dbeafe; background: rgba(56,189,248,.08); position: sticky; top: 0; z-index: 1; }
@@ -218,18 +269,44 @@
     .sectionHeader { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 12px; }
     .sectionHeader h2 { margin: 0; }
     .collapseBtn { width:auto; min-width: 120px; padding: 10px 12px; min-height: 40px; font-size: 13px; }
-    .reserveProgress { height: 10px; border-radius: 999px; background:#0b1220; overflow:hidden; margin-top: 10px; border: 1px solid var(--line); }
+    .reserveProgress { height: 10px; border-radius: 999px; background:var(--input); overflow:hidden; margin-top: 10px; border: 1px solid var(--line); }
     .reserveProgress > span { display:block; height:100%; background: linear-gradient(90deg, var(--good), var(--accent)); border-radius:inherit; }
     .editNote { color: var(--muted); font-size: 12px; line-height: 1.35; margin-top: 8px; }
+
+    body[data-theme="light"] button.secondary { background: #e2e8f0; color: #0f172a; }
+    body[data-theme="light"] .hint { background: rgba(14,165,233,.08); color: #0f172a; border-color: rgba(14,165,233,.18); }
+    body[data-theme="light"] summary { color: #1d4ed8; }
+    body[data-theme="light"] .badge.paid { color: #15803d; }
+    body[data-theme="light"] .badge.partial { color: #1d4ed8; }
+    body[data-theme="light"] .badge.pending { color: #b45309; }
+    body[data-theme="light"] button.good { color: #15803d; }
+    body[data-theme="light"] button.warn { color: #b45309; }
+    body[data-theme="light"] button.danger { color: #dc2626; }
   </style>
 </head>
 <body>
   <header>
     <div class="title">
-      <div>
+      <div class="titleLeft">
+        <nav id="appNav">
+          <button class="secondary navToggle" id="navMenuBtn" type="button" aria-label="Abrir menu">☰</button>
+          <div class="tabs" id="navMenuPanel">
+            <button class="tab active" data-screen="dashboard">Resumo</button>
+            <button class="tab" data-screen="cash">Ajuste do caixa</button>
+            <button class="tab" data-screen="reserve">Reserva de emergência</button>
+            <button class="tab" data-screen="expense">Gastos</button>
+            <button class="tab" data-screen="income">Ganhos</button>
+            <button class="tab" data-screen="spreadsheets">Planilhas</button>
+            <button class="tab" data-screen="charts">Gráficos</button>
+            <button class="tab" data-screen="data">Dados</button>
+          </div>
+        </nav>
         <h1>Meu Caixa</h1>
       </div>
-      <button class="secondary" id="installBtn" style="max-width:130px;">Instalar</button>
+      <div class="headerActions">
+        <button class="secondary iconBtn" id="themeToggleBtn" type="button" aria-label="Alternar tema">🌙</button>
+        <button class="secondary" id="installBtn" style="max-width:130px;">Instalar</button>
+      </div>
     </div>
   </header>
 
@@ -297,6 +374,48 @@
       </div>
 
       <div class="panel">
+        <div class="sectionHeader">
+          <div>
+            <h2>Pagar cartão</h2>
+            <div class="small">Escolha o mês da fatura e pague tudo ou em partes.</div>
+          </div>
+          <button id="toggleCardPanelBtn" class="secondary collapseBtn" type="button">Minimizar</button>
+        </div>
+        <div id="cardPaymentPanelBody">
+          <div class="row" style="margin-bottom:12px;">
+            <div>
+              <label for="cardBillMonth">Mês que desejo pagar</label>
+              <input id="cardBillMonth" type="month" />
+            </div>
+            <div>
+              <label for="cardPaymentDate">Data do pagamento</label>
+              <input id="cardPaymentDate" type="date" />
+            </div>
+          </div>
+          <div class="miniGrid">
+            <div class="mini"><span class="small">Fatura do mês escolhido</span><strong id="cardBillTotal" class="amount expense">R$ 0,00</strong></div>
+            <div class="mini"><span class="small">Pago no cartão</span><strong id="cardBillPaid" class="amount income">R$ 0,00</strong></div>
+            <div class="mini"><span class="small">Falta terminar esse mês</span><strong id="cardBillRemaining" class="amount warn">R$ 0,00</strong></div>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <div>
+              <label for="cardPaymentAmount">Valor que vou pagar</label>
+              <input id="cardPaymentAmount" inputmode="decimal" placeholder="Ex: 400" />
+            </div>
+            <div>
+              <label for="cardPaymentMethod">Forma do pagamento</label>
+              <select id="cardPaymentMethod"></select>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="good" id="payCardAmountBtn">Pagar valor</button>
+            <button class="secondary" id="payFullCardBtn">Quitar fatura do mês</button>
+          </div>
+          <div id="cardPaymentHint" class="hint">O pagamento será distribuído automaticamente nas compras/parcelas do cartão que vencem no mês escolhido.</div>
+        </div>
+      </div>
+
+      <div class="panel">
         <h2>Gráfico pizza: gastos do mês</h2>
         <div class="hint">O gráfico mostra as compras do mês selecionado separadas por categoria.</div>
         <div class="chartWrap">
@@ -320,13 +439,18 @@
         </div>
       </div>
 
+    </section>
+
+    <section id="screen-cash" class="screen">
       <div class="panel">
         <h2>Ajuste do caixa</h2>
         <label for="initialCash">Caixa inicial</label>
         <input id="initialCash" inputmode="decimal" placeholder="Ex: 1500" />
         <div class="actions"><button id="saveCashBtn">Salvar caixa</button></div>
       </div>
+    </section>
 
+    <section id="screen-reserve" class="screen">
       <div class="panel">
         <h2>Reserva de emergência</h2>
         <div class="row">
@@ -623,17 +747,6 @@
     </section>
   </main>
 
-  <nav>
-    <div class="tabs">
-      <button class="tab active" data-screen="dashboard">Resumo</button>
-      <button class="tab" data-screen="expense">Gastos</button>
-      <button class="tab" data-screen="income">Ganhos</button>
-      <button class="tab" data-screen="spreadsheets">Planilhas</button>
-      <button class="tab" data-screen="charts">Gráficos</button>
-      <button class="tab" data-screen="data">Dados</button>
-    </div>
-  </nav>
-
   <script>
     const STORE_KEY = 'meu_caixa_v4';
     const OLD_STORE_KEYS = ['meu_caixa_v3', 'meu_caixa_v2', 'meu_caixa_v1'];
@@ -647,10 +760,13 @@
 
     let state = loadState();
     let selectedMonth = currentMonth();
+    let cardPaymentMonth = localStorage.getItem(STORE_KEY + '-card-payment-month') || selectedMonth;
     let deferredPrompt = null;
     let expenseDetailsOpen = localStorage.getItem(STORE_KEY + '-expense-details-open') === '1';
     let expenseListOpen = localStorage.getItem(STORE_KEY + '-expense-list-open') !== '0';
     let categorySummaryOpen = localStorage.getItem(STORE_KEY + '-category-summary-open') !== '0';
+    let cardPanelOpen = localStorage.getItem(STORE_KEY + '-card-panel-open') !== '0';
+    let currentTheme = localStorage.getItem(STORE_KEY + '-theme') || 'dark';
     const openExpenseDetails = new Set();
     const openInstallmentGroups = new Set();
 
@@ -779,6 +895,10 @@
       document.getElementById('monthFilter').value = selectedMonth;
       document.getElementById('sheetMonthFilter').value = selectedMonth;
       document.getElementById('chartMonthFilter').value = selectedMonth;
+      const cardDateInput = document.getElementById('cardPaymentDate');
+      if (cardDateInput) cardDateInput.value = today();
+      const cardBillMonthInput = document.getElementById('cardBillMonth');
+      if (cardBillMonthInput) cardBillMonthInput.value = cardPaymentMonth;
       document.getElementById('initialCash').value = state.initialCash ? String(state.initialCash).replace('.', ',') : '';
       document.getElementById('emergencyReserve').value = state.emergencyReserve ? String(state.emergencyReserve).replace('.', ',') : '';
       document.getElementById('emergencyTarget').value = state.emergencyTarget ? String(state.emergencyTarget).replace('.', ',') : '';
@@ -799,6 +919,25 @@
     }
     function paymentsAll() {
       return state.expenses.flatMap(e => (e.payments || []).map(p => ({...p, expenseId: e.id, expenseName: e.name, expenseCategory: e.category})));
+    }
+
+    function isCardExpense(expense) {
+      const method = String(expense.method || '').toLowerCase();
+      return method.includes('crédito') || method.includes('credito') || method.includes('cartão') || method.includes('cartao');
+    }
+
+    function cardMonthExpenses(month = cardPaymentMonth) {
+      return state.expenses
+        .filter(e => monthKey(e.date) === month && isCardExpense(e))
+        .sort((a,b) => (a.date || '').localeCompare(b.date || '') || Number(a.installmentNumber || 1) - Number(b.installmentNumber || 1));
+    }
+
+    function cardBillTotals(month = cardPaymentMonth) {
+      const items = cardMonthExpenses(month);
+      const total = items.reduce((s,e) => s + Number(e.amount || 0), 0);
+      const paid = items.reduce((s,e) => s + totalPaidForExpense(e), 0);
+      const remaining = items.reduce((s,e) => s + remainingForExpense(e), 0);
+      return { items, total, paid, remaining };
     }
 
     function totals() {
@@ -848,9 +987,33 @@
         categoryBtn.textContent = categorySummaryOpen ? 'Minimizar' : 'Mostrar';
       }
 
+      renderCardBill();
       renderPieChart();
       renderCategorySummary();
       renderMethodSummary();
+    }
+
+    function renderCardBill() {
+      const totalEl = document.getElementById('cardBillTotal');
+      if (!totalEl) return;
+      const monthInput = document.getElementById('cardBillMonth');
+      if (monthInput) monthInput.value = cardPaymentMonth;
+      const body = document.getElementById('cardPaymentPanelBody');
+      const btn = document.getElementById('toggleCardPanelBtn');
+      if (body && btn) {
+        body.classList.toggle('hidden', !cardPanelOpen);
+        btn.textContent = cardPanelOpen ? 'Minimizar' : 'Mostrar';
+      }
+      const bill = cardBillTotals(cardPaymentMonth);
+      document.getElementById('cardBillTotal').textContent = money(bill.total);
+      document.getElementById('cardBillPaid').textContent = money(bill.paid);
+      document.getElementById('cardBillRemaining').textContent = money(bill.remaining);
+      const hint = document.getElementById('cardPaymentHint');
+      if (hint) {
+        hint.textContent = bill.items.length
+          ? `Fatura de ${monthLabel(cardPaymentMonth)}: ${bill.items.length} cobrança(s) no cartão. Falta pagar ${money(bill.remaining)}.`
+          : 'Nenhuma compra/parcelamento de cartão vencendo no mês escolhido.';
+      }
     }
 
     function renderCategorySummary() {
@@ -1136,6 +1299,13 @@
       const methodOpts = state.methods.map(c => `<option>${escapeHtml(c)}</option>`).join('');
       document.getElementById('expenseCategory').innerHTML = categoryOpts;
       document.getElementById('expenseMethod').innerHTML = methodOpts;
+      const cardPaymentMethod = document.getElementById('cardPaymentMethod');
+      if (cardPaymentMethod) {
+        const preferred = state.methods.includes('Nubank PIX') ? 'Nubank PIX' : (state.methods.includes('PIX') ? 'PIX' : state.methods[0]);
+        const previous = cardPaymentMethod.value || preferred;
+        cardPaymentMethod.innerHTML = methodOpts;
+        cardPaymentMethod.value = state.methods.includes(previous) ? previous : preferred;
+      }
     }
 
     function renderExpenses() {
@@ -1262,6 +1432,48 @@
       categorySummaryOpen = !categorySummaryOpen;
       localStorage.setItem(STORE_KEY + '-category-summary-open', categorySummaryOpen ? '1' : '0');
       renderDashboard();
+    }
+
+    function toggleCardPanel() {
+      cardPanelOpen = !cardPanelOpen;
+      localStorage.setItem(STORE_KEY + '-card-panel-open', cardPanelOpen ? '1' : '0');
+      renderCardBill();
+    }
+
+    function setCardPaymentMonth(month) {
+      cardPaymentMonth = month || selectedMonth || currentMonth();
+      localStorage.setItem(STORE_KEY + '-card-payment-month', cardPaymentMonth);
+      renderCardBill();
+    }
+
+    function applyTheme(theme) {
+      currentTheme = theme === 'light' ? 'light' : 'dark';
+      document.body.dataset.theme = currentTheme;
+      localStorage.setItem(STORE_KEY + '-theme', currentTheme);
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) {
+        btn.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+        btn.setAttribute('aria-label', currentTheme === 'dark' ? 'Tema escuro' : 'Tema claro');
+      }
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', currentTheme === 'dark' ? '#0f172a' : '#f8fafc');
+      renderPieChart();
+      renderCharts();
+    }
+
+    function toggleTheme() {
+      applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    }
+
+    function toggleNavMenu() {
+      const nav = document.getElementById('appNav');
+      if (!nav) return;
+      nav.classList.toggle('menuOpen');
+    }
+
+    function closeNavMenu() {
+      const nav = document.getElementById('appNav');
+      if (nav) nav.classList.remove('menuOpen');
     }
 
     function toggleInstallmentPaid(expenseId, checked) {
@@ -1544,6 +1756,58 @@
       saveState();
     }
 
+    function applyCardPayment(amount, date, method, note, month = cardPaymentMonth) {
+      let amountCents = cents(amount);
+      if (amountCents <= 0) { alert('Digite um valor válido para pagar o cartão.'); return false; }
+      const bill = cardBillTotals(month);
+      const remainingCents = cents(bill.remaining);
+      if (!bill.items.length || remainingCents <= 0) { alert('Não tem fatura de cartão pendente nesse mês.'); return false; }
+      if (amountCents > remainingCents) {
+        alert('O valor informado é maior do que falta pagar neste mês. Digite no máximo ' + money(bill.remaining) + '.');
+        return false;
+      }
+      for (const e of bill.items) {
+        if (amountCents <= 0) break;
+        const remainingExpenseCents = cents(remainingForExpense(e));
+        if (remainingExpenseCents <= 0) continue;
+        const payCents = Math.min(amountCents, remainingExpenseCents);
+        e.payments = e.payments || [];
+        e.payments.push({
+          id: uid(),
+          date,
+          amount: fromCents(payCents),
+          method,
+          note
+        });
+        amountCents -= payCents;
+      }
+      return true;
+    }
+
+    function payCardAmount() {
+      const amountInput = document.getElementById('cardPaymentAmount');
+      const amount = parseMoney(amountInput.value);
+      const date = document.getElementById('cardPaymentDate').value || today();
+      const method = document.getElementById('cardPaymentMethod').value || 'Nubank PIX';
+      const note = 'Pagamento parcial da fatura do cartão - ' + monthLabel(cardPaymentMonth);
+      if (applyCardPayment(amount, date, method, note, cardPaymentMonth)) {
+        amountInput.value = '';
+        saveState();
+      }
+    }
+
+    function payFullCardBill() {
+      const bill = cardBillTotals(cardPaymentMonth);
+      if (bill.remaining <= 0) { alert('A fatura do cartão deste mês já está paga ou não tem cobranças.'); return; }
+      if (!confirm('Quitar a fatura de ' + monthLabel(cardPaymentMonth) + ' no valor de ' + money(bill.remaining) + '?')) return;
+      const date = document.getElementById('cardPaymentDate').value || today();
+      const method = document.getElementById('cardPaymentMethod').value || 'Nubank PIX';
+      if (applyCardPayment(bill.remaining, date, method, 'Fatura do cartão quitada - ' + monthLabel(cardPaymentMonth), cardPaymentMonth)) {
+        document.getElementById('cardPaymentAmount').value = '';
+        saveState();
+      }
+    }
+
     function addIncome() {
       const name = document.getElementById('incomeName').value.trim();
       const amount = parseMoney(document.getElementById('incomeAmount').value);
@@ -1637,6 +1901,7 @@
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-' + name).classList.add('active');
       document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.screen === name));
+      closeNavMenu();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1667,9 +1932,13 @@
     document.getElementById('toggleExpenseDetailsBtn').addEventListener('click', toggleExpenseDetailsMode);
     document.getElementById('toggleExpensesListBtn').addEventListener('click', toggleExpensesList);
     document.getElementById('toggleCategorySummaryBtn').addEventListener('click', toggleCategorySummary);
+    document.getElementById('toggleCardPanelBtn').addEventListener('click', toggleCardPanel);
+    document.getElementById('cardBillMonth').addEventListener('change', e => setCardPaymentMonth(e.target.value || selectedMonth));
     document.getElementById('addIncomeBtn').addEventListener('click', addIncome);
     document.getElementById('saveCashBtn').addEventListener('click', saveCash);
     document.getElementById('saveReserveBtn').addEventListener('click', saveReserve);
+    document.getElementById('payCardAmountBtn').addEventListener('click', payCardAmount);
+    document.getElementById('payFullCardBtn').addEventListener('click', payFullCardBill);
     document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
     document.getElementById('addMethodBtn').addEventListener('click', addMethod);
     document.getElementById('exportBtn').addEventListener('click', exportData);
@@ -1695,6 +1964,12 @@
       if (e.target.value.includes('Crédito') && paidNow.value === amount) paidNow.value = '';
     });
     document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showScreen(t.dataset.screen)));
+    document.getElementById('navMenuBtn').addEventListener('click', toggleNavMenu);
+    document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+    document.addEventListener('click', (event) => {
+      const nav = document.getElementById('appNav');
+      if (nav && nav.classList.contains('menuOpen') && !nav.contains(event.target)) closeNavMenu();
+    });
 
     function showInstallHelp() {
       const openedAsFile = location.protocol === 'file:' || location.protocol === '';
@@ -1727,6 +2002,7 @@
       navigator.serviceWorker.register('service-worker.js').catch(() => {});
     }
 
+    applyTheme(currentTheme);
     setupDates();
     updateInstallmentPreview();
     saveState();

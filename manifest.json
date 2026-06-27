@@ -1,7 +1,7 @@
 {
   "name": "Meu Caixa - Controle de Gastos",
   "short_name": "Meu Caixa",
-  "description": "Controle de gastos, ganhos, reserva, parcelas, planilhas e gráficos mensais.",
+  "description": "Controle de gastos, ganhos, reserva, cartão, parcelas, planilhas e gráficos mensais.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
